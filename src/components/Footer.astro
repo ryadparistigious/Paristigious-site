@@ -1,0 +1,322 @@
+---
+import { site, servicesNav, phoneDisplay, whatsappHref } from '../lib/site';
+
+const year = new Date().getFullYear();
+const wa = whatsappHref();
+---
+
+<footer class="footer on-dark">
+  <div class="container">
+    {/* Le footer est d'abord une zone d'action : joindre, écrire, demander.
+        La navigation vient ensuite. (règle 40) */}
+    <div class="footer__act">
+      <div>
+        <p class="kicker">Nous joindre</p>
+        <p class="footer__pitch">
+          Un déplacement à organiser ? Une question sur un programme ?<br />
+          Nous répondons à chaque demande individuellement.
+        </p>
+      </div>
+      <ul class="footer__channels">
+        <li>
+          <a class="channel channel--primary" href="/demande-de-devis">
+            <span class="channel__label">Demander un devis</span>
+            <span class="channel__value">Réponse personnalisée</span>
+            <span class="channel__arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+        <li>
+          <a class="channel" href={`mailto:${site.email}`}>
+            <span class="channel__label">Email</span>
+            <span class="channel__value">{site.email}</span>
+            <span class="channel__arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+        {
+          site.phone ? (
+            <li>
+              <a class="channel" href={`tel:${site.phone}`}>
+                <span class="channel__label">Téléphone</span>
+                <span class="channel__value">{phoneDisplay()}</span>
+                <span class="channel__arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ) : null
+        }
+        {
+          wa && (
+            <li>
+              <a class="channel" href={wa} target="_blank" rel="noopener">
+                <span class="channel__label">WhatsApp</span>
+                <span class="channel__value">Démarrer la conversation</span>
+                <span class="channel__arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          )
+        }
+      </ul>
+    </div>
+
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a class="wordmark" href="/">PARISTIGIOUS<span>.</span></a>
+        <p>Maison de mobilité privée à Paris, en Île-de-France et sur la Côte d’Azur.</p>
+      </div>
+
+      <nav class="footer__col" aria-labelledby="f-services">
+        <h2 id="f-services">Services</h2>
+        <ul>
+          {servicesNav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        </ul>
+      </nav>
+
+      <nav class="footer__col" aria-labelledby="f-dest">
+        <h2 id="f-dest">Destinations</h2>
+        <ul>
+          <li><a href="/#destinations">Paris & Île-de-France</a></li>
+          <li><a href="/#destinations">Côte d’Azur & Monaco</a></li>
+          <li><a href="/#destinations">France & longue distance</a></li>
+          <li><a href="/#destinations">International</a></li>
+        </ul>
+      </nav>
+
+      <nav class="footer__col" aria-labelledby="f-maison">
+        <h2 id="f-maison">La maison</h2>
+        <ul>
+          <li><a href="/partenaires">Paristigious Partners</a></li>
+          <li><a href="/#exigence">Notre exigence</a></li>
+          <li><a href="/#faq">Questions fréquentes</a></li>
+          <li><a href="/demande-de-devis">Demander un devis</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="footer__bottom">
+      <span>© {year} {site.name}</span>
+      <nav aria-label="Liens légaux">
+        <a href="/mentions-legales">Mentions légales</a>
+        <a href="/confidentialite">Confidentialité</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<style lang="scss">
+  .footer {
+    padding-block: var(--s-6) var(--s-4);
+    /* Marge basse supplémentaire sur mobile pour ne pas passer sous la
+       barre CTA collante. */
+    padding-block-end: calc(var(--s-4) + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (max-width: 52rem) {
+    .footer {
+      padding-block-end: calc(6rem + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  .footer__act {
+    display: grid;
+    gap: var(--s-4);
+    padding-block-end: var(--s-5);
+    border-block-end: 1px solid var(--border);
+  }
+
+  @include from($bp-lg) {
+    .footer__act {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+      gap: var(--s-6);
+      align-items: start;
+    }
+  }
+
+  .footer__pitch {
+    margin-block-start: var(--s-2);
+    font-family: var(--serif);
+    font-size: var(--step-2);
+    font-weight: 300;
+    line-height: 1.35;
+  }
+
+  .footer__channels {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  @include from($bp-sm) {
+    .footer__channels {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* Le nombre de canaux varie selon que le téléphone et le WhatsApp sont
+       renseignés. Quand il est impair, le dernier occupe toute la largeur :
+       sinon la grille laisse une cellule vide, visible comme un trou sombre. */
+    .footer__channels li:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .channel {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-content: center;
+    gap: 0.2rem 1rem;
+    block-size: 100%;
+    min-block-size: 5rem;
+    padding: 1.1rem 1.25rem;
+    background: var(--surface);
+    transition: background-color var(--t-base) var(--ease);
+  }
+
+  .channel--primary {
+    background: var(--surface-raised);
+  }
+
+  @include hover-ok {
+    a.channel:hover {
+      background: var(--navy-700);
+    }
+
+    a.channel:hover .channel__arrow {
+      transform: translate3d(4px, 0, 0);
+      opacity: 1;
+    }
+  }
+
+  .channel__label {
+    grid-column: 1;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .channel__value {
+    grid-column: 1;
+    font-size: 0.95rem;
+    color: var(--on-surface);
+    overflow-wrap: anywhere;
+  }
+
+  .channel--muted .channel__value {
+    color: var(--on-surface-muted);
+  }
+
+  .channel__arrow {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    opacity: 0.5;
+    transition:
+      transform var(--t-base) var(--ease-out),
+      opacity var(--t-base) var(--ease);
+  }
+
+  /* ─── Navigation ──────────────────────────────────────── */
+  .footer__grid {
+    display: grid;
+    gap: var(--s-4);
+    padding-block: var(--s-5);
+  }
+
+  @include from($bp-sm) {
+    .footer__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @include from($bp-lg) {
+    .footer__grid {
+      grid-template-columns: 1.4fr repeat(3, 1fr);
+      gap: var(--s-5);
+    }
+  }
+
+  .footer__brand p {
+    max-width: 26rem;
+    margin-block-start: 0.9rem;
+    font-size: 0.9rem;
+    color: var(--on-surface-muted);
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+    font-family: var(--display);
+    font-size: 1.35rem;
+    letter-spacing: 0.09em;
+  }
+
+  .wordmark span {
+    color: var(--brass-500);
+  }
+
+  .footer__col h2 {
+    margin-block-end: 1rem;
+    font-family: var(--sans);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .footer__col ul {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .footer__col a {
+    /* 44px de haut minimum : un lien de pied de page se tape au pouce
+       comme n'importe quel autre. (règles 22 et 24) */
+    display: flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+    font-size: 0.9rem;
+    color: var(--on-surface-muted);
+    transition: color var(--t-fast) var(--ease);
+  }
+
+  @include hover-ok {
+    .footer__col a:hover {
+      color: var(--on-surface);
+    }
+  }
+
+  /* ─── Bas de page ─────────────────────────────────────── */
+  .footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding-block-start: var(--s-3);
+    border-block-start: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--on-surface-muted);
+  }
+
+  .footer__bottom nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+  }
+
+  .footer__bottom nav a {
+    display: flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+  }
+
+  @include hover-ok {
+    .footer__bottom a:hover {
+      color: var(--on-surface);
+    }
+  }
+</style>

@@ -1,0 +1,93 @@
+---
+import ServiceCard from '../../components/ServiceCard.astro';
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Button from '../../components/Button.astro';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base
+  title="Nos services de mobilité privée | Paristigious"
+  description="Transferts, chauffeur à disposition, événements, mariages, excursions privées et mobilité professionnelle à Paris et sur la Côte d’Azur."
+>
+  <section class="intro">
+    <div class="container">
+      <p class="kicker">Nos univers</p>
+      <h1>Six façons d’organiser<br />un <em>déplacement.</em></h1>
+      <p class="lead">
+        Chaque prestation répond à un contexte différent. Choisissez celle qui ressemble le
+        plus au vôtre : le reste s’ajuste ensuite avec vous.
+      </p>
+    </div>
+  </section>
+
+  <section class="section list">
+    <div class="container">
+      <ul class="cards">
+        {
+          services.map((service, i) => (
+            <li data-reveal data-reveal-delay={i * 50}>
+              <ServiceCard service={service} eager={i < 2} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section closing on-dark" data-cta-suppressor>
+    <div class="container closing__inner" data-reveal>
+      <p class="kicker kicker--plain">Vous hésitez ?</p>
+      <h2>Décrivez simplement<br />votre <em>déplacement.</em></h2>
+      <p class="muted">
+        Si aucune catégorie ne correspond exactement, décrivez votre besoin : nous
+        construisons la réponse à partir de votre contexte, pas d’un catalogue.
+      </p>
+      <Button href="/demande-de-devis" variant="brass" size="lg" arrow>Demander un devis</Button>
+    </div>
+  </section>
+</Base>
+
+<style lang="scss">
+  .intro {
+    padding-block: calc(var(--header-h) + clamp(3rem, 8vw, 6rem)) clamp(2rem, 5vw, 3.5rem);
+    background: var(--ivory-200);
+  }
+
+  .intro h1 {
+    margin-block: 1.25rem 1.5rem;
+    font-size: var(--step-4);
+  }
+
+  .intro .lead {
+    max-width: 40rem;
+    color: var(--on-surface-muted);
+  }
+
+  .cards {
+    display: grid;
+    gap: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  @include from($bp-sm) {
+    .cards {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @include from($bp-lg) {
+    .cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .closing__inner {
+    display: grid;
+    justify-items: center;
+    gap: 1.25rem;
+    max-width: 42rem;
+    margin-inline: auto;
+    text-align: center;
+  }
+</style>

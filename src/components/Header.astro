@@ -1,0 +1,431 @@
+---
+import { mainNav, servicesNav, site } from '../lib/site';
+import Button from './Button.astro';
+import MobileMenu from './MobileMenu.astro';
+
+interface Props {
+  /** Le header démarre transparent au-dessus d'un hero plein écran. */
+  overHero?: boolean;
+}
+
+const { overHero = false } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+const isCurrent = (href: string) => {
+  if (href.startsWith('/#')) return false;
+  return path === href || (href !== '/' && path.startsWith(href));
+};
+---
+
+{/* Sentinelle : c'est sa sortie du viewport qui bascule le header en mode
+    compact. Aucun écouteur de scroll, donc aucun travail au défilement. */}
+<div id="header-sentinel" aria-hidden="true"></div>
+
+<header class="header" id="site-header" data-over-hero={overHero ? '' : undefined}>
+  <div class="header__inner container">
+    <a class="wordmark" href="/" aria-label="Paristigious — accueil">
+      <span class="wordmark__name">PARISTIGIOUS<span class="wordmark__dot">.</span></span>
+      <small>Maison de mobilité privée</small>
+    </a>
+
+    <nav class="nav" aria-label="Navigation principale">
+      <ul class="nav__list">
+        <li class="nav__item nav__item--has-menu" data-dropdown>
+          <a
+            class="nav__link"
+            href="/services"
+            aria-current={isCurrent('/services') ? 'page' : undefined}>Services</a
+          >
+          <button
+            class="nav__disclosure"
+            type="button"
+            aria-expanded="false"
+            aria-controls="mega-services"
+            aria-label="Afficher les services"
+            data-dropdown-trigger
+          >
+            <svg viewBox="0 0 10 6" width="10" height="6" aria-hidden="true">
+              <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4" />
+            </svg>
+          </button>
+
+          <div class="mega" id="mega-services" data-dropdown-panel hidden>
+            <div class="mega__inner">
+              <p class="kicker kicker--plain mega__title">Nos univers</p>
+              <ul class="mega__grid">
+                {
+                  servicesNav.map((item, i) => (
+                    <li>
+                      <a class="mega__link" href={item.href}>
+                        <span class="mega__num">{String(i + 1).padStart(2, '0')}</span>
+                        <span class="mega__body">
+                          <span class="mega__label">{item.label}</span>
+                          <span class="mega__desc">{item.description}</span>
+                        </span>
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+              <a class="mega__all" href="/services">Voir tous les services <span aria-hidden="true">→</span></a>
+            </div>
+          </div>
+        </li>
+
+        {
+          mainNav
+            .filter((item) => item.href !== '/services')
+            .map((item) => (
+              <li class="nav__item">
+                <a
+                  class="nav__link"
+                  href={item.href}
+                  aria-current={isCurrent(item.href) ? 'page' : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+        }
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      <Button href="/demande-de-devis" variant="brass" size="sm" class="header__cta" arrow>
+        Demander un devis
+      </Button>
+      <MobileMenu />
+    </div>
+  </div>
+</header>
+
+{/* Sans JavaScript, le bouton burger ne peut rien ouvrir : on affiche à la
+    place une barre de navigation défilable. Le site reste navigable. (règle 19) */}
+<noscript>
+  <nav class="nav-fallback" aria-label="Navigation (sans JavaScript)">
+    <a href="/services">Services</a>
+    <a href="/#destinations">Destinations</a>
+    <a href="/#exigence">Notre exigence</a>
+    <a href="/partenaires">Professionnels</a>
+    <a href="/#faq">FAQ</a>
+    <a href="/demande-de-devis">Devis</a>
+    <a href={`mailto:${site.email}`}>Email</a>
+  </nav>
+</noscript>
+
+<style lang="scss">
+  .header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 90;
+    view-transition-name: site-header;
+    color: var(--ivory-100);
+    background: linear-gradient(180deg, rgb(8 19 22 / 45%), transparent);
+    /* Au-dessus d'un hero photographique, le header EST une surface sombre :
+       il doit le déclarer, sinon les composants qui lisent --on-surface
+       (le bouton « outline ») se peignent en encre noire sur la photo. */
+    --on-surface: var(--ivory-100);
+    --on-surface-muted: color-mix(in srgb, var(--ivory-100) 70%, transparent);
+    --accent: var(--brass-400);
+    --border: var(--rule-light);
+    border-block-end: 1px solid rgb(255 255 255 / 14%);
+    transition:
+      background-color var(--t-base) var(--ease),
+      border-color var(--t-base) var(--ease),
+      color var(--t-base) var(--ease);
+  }
+
+  /* Dès que le header repose sur un fond clair — page sans hero, ou hero
+     dépassé — les jetons repassent en surface claire d'un bloc. */
+  .header:not([data-over-hero]),
+  :global(html.is-scrolled) .header {
+    background: color-mix(in srgb, var(--ivory-50) 88%, transparent);
+    color: var(--ink);
+    border-block-end-color: var(--rule);
+    --on-surface: var(--ink);
+    --on-surface-muted: var(--ink-muted);
+    --accent: var(--brass-600);
+    --border: var(--rule);
+  }
+
+  @supports (backdrop-filter: blur(1px)) {
+    .header:not([data-over-hero]),
+    :global(html.is-scrolled) .header {
+      background: color-mix(in srgb, var(--ivory-50) 72%, transparent);
+      backdrop-filter: blur(14px) saturate(1.4);
+    }
+  }
+
+  .header__inner {
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    block-size: var(--header-h);
+    transition: block-size var(--t-base) var(--ease);
+  }
+
+  :global(html.is-scrolled) .header__inner {
+    block-size: var(--header-compact-h);
+  }
+
+  .wordmark {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    /* Le logo est un lien vers l'accueil : il doit se taper comme tel. */
+    min-block-size: 2.75rem;
+    font-family: var(--display);
+    font-size: clamp(1.1rem, 2.4vw, 1.4rem);
+    letter-spacing: 0.09em;
+    white-space: nowrap;
+    flex: none;
+  }
+
+  .wordmark__dot {
+    color: var(--brass-500);
+  }
+
+  .wordmark small {
+    margin-top: 0.2rem;
+    font-family: var(--sans);
+    font-size: 0.46rem;
+    line-height: 1.5;
+    letter-spacing: 0.23em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  /* ─── Navigation desktop ──────────────────────────────── */
+  .nav {
+    display: none;
+    margin-inline-start: auto;
+  }
+
+  @include from($bp-lg) {
+    .nav {
+      display: block;
+    }
+  }
+
+  .nav__list {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.5rem, 1.6vw, 1.6rem);
+  }
+
+  .nav__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav__link {
+    position: relative;
+    padding-block: 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.055em;
+  }
+
+  /* Soulignement animé : transform, jamais width (règle 3) */
+  .nav__link::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: 1px;
+    background: var(--brass-500);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--t-base) var(--ease-out);
+  }
+
+  .nav__link[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+
+  @include hover-ok {
+    .nav__link:hover::after {
+      transform: scaleX(1);
+    }
+  }
+
+  .nav__link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .nav__disclosure {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.4rem;
+    block-size: 1.4rem;
+    margin-inline-start: 0.15rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    opacity: 0.65;
+    transition:
+      transform var(--t-base) var(--ease),
+      opacity var(--t-fast) var(--ease);
+  }
+
+  :global(html.js) .nav__disclosure {
+    display: inline-flex;
+  }
+
+  .nav__disclosure[aria-expanded='true'] {
+    transform: rotate(180deg);
+    opacity: 1;
+  }
+
+  /* ─── Méga-menu ───────────────────────────────────────── */
+  .mega {
+    position: absolute;
+    inset-block-start: calc(100% + 0.9rem);
+    inset-inline-start: -1.5rem;
+    inline-size: min(38rem, 80vw);
+    padding: 1.75rem;
+    background: var(--ivory-50);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .mega[hidden] {
+    display: none;
+  }
+
+  @include motion-ok {
+    .mega:not([hidden]) {
+      animation: mega-in 220ms var(--ease-out) both;
+    }
+  }
+
+  @keyframes mega-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, -6px, 0);
+    }
+  }
+
+  .mega__title {
+    margin-block-end: 1.1rem;
+  }
+
+  .mega__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.25rem 1.5rem;
+  }
+
+  .mega__link {
+    display: flex;
+    gap: 0.85rem;
+    padding: 0.7rem 0.75rem;
+    margin-inline: -0.75rem;
+    border-radius: var(--radius);
+    transition: background-color var(--t-fast) var(--ease);
+  }
+
+  @include hover-ok {
+    .mega__link:hover {
+      background: var(--ivory-200);
+    }
+
+    .mega__link:hover .mega__label {
+      color: var(--brass-700);
+    }
+  }
+
+  .mega__num {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--brass-600);
+    padding-block-start: 0.15rem;
+  }
+
+  .mega__body {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .mega__label {
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: color var(--t-fast) var(--ease);
+  }
+
+  .mega__desc {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--ink-muted);
+  }
+
+  .mega__all {
+    display: inline-block;
+    margin-block-start: 1.25rem;
+    padding-block-start: 1.1rem;
+    border-block-start: 1px solid var(--rule);
+    inline-size: 100%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brass-700);
+  }
+
+  /* ─── Actions ─────────────────────────────────────────── */
+  .header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-inline-start: auto;
+  }
+
+  @include from($bp-lg) {
+    .header__actions {
+      margin-inline-start: clamp(1rem, 3vw, 2.5rem);
+    }
+  }
+
+  .header__cta {
+    display: none;
+  }
+
+  @include from($bp-sm) {
+    .header__cta {
+      display: inline-flex;
+    }
+  }
+
+  /* ─── Repli sans JavaScript ───────────────────────────── */
+  .nav-fallback {
+    position: fixed;
+    inset: var(--header-h) 0 auto;
+    z-index: 89;
+    display: flex;
+    gap: 1.25rem;
+    padding: 0.6rem var(--gutter);
+    overflow-x: auto;
+    background: var(--navy-900);
+    color: var(--ivory-100);
+    font-size: 0.78rem;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+
+  @include from($bp-lg) {
+    .nav-fallback {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { initDropdown } from '../scripts/dropdown';
+  initDropdown();
+</script>

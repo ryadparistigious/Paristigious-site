@@ -1,0 +1,505 @@
+---
+import { Picture } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Button from '../components/Button.astro';
+import Faq from '../components/Faq.astro';
+import { site, phoneDisplay, whatsappHref } from '../lib/site';
+import coverImage from '../assets/event-arrival.jpg';
+
+const wa = whatsappHref('mettre en place un partenariat');
+
+const profiles = [
+  {
+    sector: 'Agences réceptives',
+    title: 'Agences & DMC',
+    body: 'Flotte mobilisable pour vos groupes et vos clients individuels, facturation centralisée et référent unique pour coordonner plusieurs réservations simultanées.',
+  },
+  {
+    sector: 'Hôtellerie',
+    title: 'Hôtels & Palaces',
+    body: 'Ligne directe conciergerie, réactivité étendue, standards de présentation et de discrétion alignés sur l’expérience de votre établissement.',
+  },
+  {
+    sector: 'Mariage',
+    title: 'Wedding planners',
+    body: 'Coordination du jour J, repérages en amont et solution de repli systématiquement prévue en cas d’imprévu de dernière minute.',
+  },
+  {
+    sector: 'Événementiel',
+    title: 'Coordinateurs d’événements',
+    body: 'Galas, lancements, séminaires : gestion des flux d’invités et navettes VIP synchronisées avec votre programme, minute par minute.',
+  },
+  {
+    sector: 'Entreprises',
+    title: 'Directions & assistanats',
+    body: 'Dirigeants, roadshows, clients et prospects, avec un cadre tarifaire stable et un canal de réservation direct.',
+  },
+  {
+    sector: 'Diplomatie',
+    title: 'Délégations & ambassades',
+    body: 'Transport discret et fiable pour missions officielles, en coordination avec les protocoles de sécurité déjà en place.',
+  },
+];
+
+const benefits = [
+  {
+    title: 'Un interlocuteur dédié',
+    body: 'Un seul contact direct pour toutes vos demandes, sans standard et sans changement d’interlocuteur.',
+  },
+  {
+    title: 'Conditions préférentielles',
+    body: 'Tarifs cadrés selon le volume, sans renégociation à chaque réservation.',
+  },
+  {
+    title: 'Facturation simplifiée',
+    body: 'Regroupement des prestations plutôt qu’une note par trajet, pour une comptabilité allégée.',
+  },
+  {
+    title: 'Priorité de disponibilité',
+    body: 'Vos demandes sont traitées en priorité, y compris en période de forte affluence, selon disponibilité.',
+  },
+];
+
+const steps = [
+  {
+    title: 'Prise de contact',
+    body: 'Vous décrivez votre structure et vos besoins, par le formulaire ou directement par e-mail.',
+  },
+  {
+    title: 'Définition des conditions',
+    body: 'Volumes, tarifs, modalités de facturation et interlocuteur dédié sont cadrés avant la première réservation.',
+  },
+  {
+    title: 'Mise en service',
+    body: 'Vous réservez directement auprès de votre interlocuteur, sans repasser par le formulaire grand public.',
+  },
+];
+
+const proFaq = [
+  {
+    q: 'Y a-t-il un volume minimum pour devenir partenaire ?',
+    a: 'Non. Le cadre est adapté au volume réel, y compris pour des besoins ponctuels mais exigeants.',
+  },
+  {
+    q: 'Sous quel délai obtient-on une réponse ?',
+    a: 'Chaque demande professionnelle est traitée individuellement. Le délai de réponse vous est indiqué dès la prise de contact.',
+  },
+  {
+    q: 'Peut-on tester avant de s’engager ?',
+    a: 'Oui. Rien n’oblige à formaliser un accord avant d’avoir vu comment une première mission se déroule.',
+  },
+  {
+    q: 'Les conditions sont-elles revues dans le temps ?',
+    a: 'Elles sont réexaminées avec vous lorsque votre volume ou vos besoins évoluent, jamais unilatéralement en cours d’exercice.',
+  },
+];
+---
+
+<Base
+  title="Espace professionnels — Paristigious Partners"
+  description="Paristigious accompagne agences réceptives, hôtels, wedding planners, entreprises et délégations avec un service de mobilité fiable à Paris et sur la Côte d’Azur."
+  overHero
+  ctaNeed="business"
+  ctaContext="mettre en place un partenariat"
+>
+  <section class="hero on-dark">
+    <Picture
+      class="hero__media"
+      src={coverImage}
+      alt="Arrivée coordonnée d’invités devant un établissement en soirée"
+      widths={[640, 960, 1280, 1600]}
+      sizes="100vw"
+      formats={['avif', 'webp']}
+      loading="eager"
+      fetchpriority="high"
+      decoding="sync"
+      layout="full-width"
+    />
+    <div class="hero__scrim"></div>
+    <div class="container hero__content">
+      <p class="kicker">Paristigious Partners</p>
+      <h1>Un partenaire.<br />Pas un prestataire<br /><em>de plus.</em></h1>
+      <p class="hero__tag">
+        Agences, hôtels, wedding planners, entreprises et délégations : notre organisation
+        s’intègre à votre chaîne de service avec l’exigence que vous imposez à la vôtre.
+      </p>
+      <div class="hero__actions">
+        <Button href="/demande-de-devis?besoin=business" variant="brass" size="lg" arrow>
+          Ouvrir un compte
+        </Button>
+        <Button href={`mailto:${site.emailPartners}`} variant="outline" size="lg">
+          {site.emailPartners}
+        </Button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section profiles">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="kicker">Qui nous accompagnons</p>
+        <h2>Six métiers,<br />une même <em>confiance.</em></h2>
+        <p>Chaque secteur a ses contraintes. Voici comment nous nous y adaptons concrètement.</p>
+      </div>
+
+      <ul class="profiles__grid">
+        {
+          profiles.map((p, i) => (
+            <li data-reveal data-reveal-delay={i * 40}>
+              <span class="profiles__sector">{p.sector}</span>
+              <h3>{p.title}</h3>
+              <p class="muted">{p.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section benefits on-dark">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="kicker">Ce que vous obtenez</p>
+        <h2>Un partenariat pensé<br />pour <em>durer.</em></h2>
+        <p>Pas de promesse vague : voici ce qui change concrètement une fois le cadre posé.</p>
+      </div>
+
+      <ol class="benefits__list">
+        {
+          benefits.map((b, i) => (
+            <li data-reveal data-reveal-delay={i * 50}>
+              <span class="numeral">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{b.title}</h3>
+              <p class="muted">{b.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section process">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="kicker">La suite</p>
+        <h2>Devenir partenaire,<br />en <em>trois étapes.</em></h2>
+        <p>Aucune procédure lourde : l’objectif est d’être opérationnel rapidement.</p>
+      </div>
+
+      <ol class="process__list">
+        {
+          steps.map((s, i) => (
+            <li data-reveal data-reveal-delay={i * 60}>
+              <span class="process__num">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{s.title}</h3>
+              <p class="muted">{s.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section faq-block">
+    <div class="container faq-block__grid">
+      <div class="section-head" data-reveal>
+        <p class="kicker">Questions fréquentes</p>
+        <h2>Avant de nous<br /><em>référencer.</em></h2>
+      </div>
+      <div data-reveal data-reveal-delay="60">
+        <Faq items={proFaq} name="faq-pro" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section contact on-dark" id="contact" data-cta-suppressor>
+    <div class="container contact__grid">
+      <div data-reveal>
+        <p class="kicker">Formulaire professionnels</p>
+        <h2>Parlons de votre<br /><em>structure.</em></h2>
+        <p class="muted contact__copy">
+          Le formulaire de devis comporte un parcours dédié aux professionnels : société,
+          type de structure et volume estimé. Il s’ouvre déjà positionné dessus.
+        </p>
+        <div class="contact__actions">
+          <Button href="/demande-de-devis?besoin=business" variant="brass" size="lg" arrow>
+            Ouvrir un compte professionnel
+          </Button>
+        </div>
+      </div>
+
+      <ul class="contact__channels" data-reveal data-reveal-delay="60">
+        <li>
+          <a href={`mailto:${site.emailPartners}`}>
+            <span>Email partenaires</span>{site.emailPartners}
+          </a>
+        </li>
+        {
+          site.phone ? (
+            <li>
+              <a href={`tel:${site.phone}`}>
+                <span>Téléphone</span>
+                {phoneDisplay()}
+              </a>
+            </li>
+          ) : null
+        }
+        {
+          wa && (
+            <li>
+              <a href={wa} target="_blank" rel="noopener">
+                <span>WhatsApp pro</span>Démarrer la conversation
+              </a>
+            </li>
+          )
+        }
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style lang="scss">
+  .hero {
+    position: relative;
+    display: grid;
+    align-items: end;
+    min-block-size: min(80svh, 46rem);
+    padding-block: calc(var(--header-h) + 3rem) clamp(3rem, 8vh, 5rem);
+    background: var(--navy-950);
+    isolation: isolate;
+    overflow: clip;
+  }
+
+  .hero :global(.hero__media) {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(
+        180deg,
+        rgb(5 13 25 / 62%) 0%,
+        rgb(5 13 25 / 34%) 32%,
+        rgb(5 13 25 / 76%) 64%,
+        rgb(5 13 25 / 94%) 100%
+      ),
+      linear-gradient(90deg, rgb(5 13 25 / 58%) 0%, rgb(5 13 25 / 10%) 68%);
+  }
+
+  .hero__content {
+    position: relative;
+  }
+
+  .hero h1 {
+    margin-block: 1.25rem 1.25rem;
+    max-width: 48rem;
+    font-size: clamp(2.6rem, 5vw, 4.8rem);
+  }
+
+  .hero__tag {
+    max-width: 36rem;
+    color: color-mix(in srgb, var(--ivory-100) 90%, transparent);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block-start: 2rem;
+  }
+
+  /* ─── Profils ─────────────────────────────────────────── */
+  .profiles__grid {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  @include from($bp-sm) {
+    .profiles__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @include from($bp-lg) {
+    .profiles__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .profiles__grid li {
+    display: grid;
+    align-content: start;
+    gap: 0.5rem;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    background: var(--surface-raised);
+  }
+
+  .profiles__sector {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .profiles__grid h3 {
+    font-size: var(--step-2);
+  }
+
+  .profiles__grid p {
+    font-size: 0.92rem;
+  }
+
+  /* ─── Bénéfices ───────────────────────────────────────── */
+  .benefits__list {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  @include from($bp-sm) {
+    .benefits__list {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @include from($bp-lg) {
+    .benefits__list {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .benefits__list h3 {
+    margin-block: 0.6rem 0.4rem;
+    font-size: var(--step-1);
+  }
+
+  .benefits__list p {
+    font-size: 0.92rem;
+  }
+
+  /* ─── Process ─────────────────────────────────────────── */
+  .process__list {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  @include from($bp-md) {
+    .process__list {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--s-5);
+    }
+  }
+
+  .process__num {
+    display: block;
+    padding-block-end: 1rem;
+    margin-block-end: 1.1rem;
+    border-block-end: 1px solid var(--accent);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: var(--step-2);
+    color: var(--accent);
+  }
+
+  .process__list h3 {
+    margin-block-end: 0.5rem;
+    font-size: var(--step-2);
+  }
+
+  .process__list p {
+    font-size: 0.95rem;
+  }
+
+  /* ─── FAQ ─────────────────────────────────────────────── */
+  .faq-block__grid {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  @include from($bp-lg) {
+    .faq-block__grid {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: var(--s-6);
+      align-items: start;
+    }
+
+    .faq-block .section-head {
+      position: sticky;
+      inset-block-start: calc(var(--header-h) + 2.5rem);
+      margin-bottom: 0;
+    }
+  }
+
+  /* ─── Contact ─────────────────────────────────────────── */
+  .contact__grid {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  @include from($bp-lg) {
+    .contact__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+      gap: var(--s-6);
+      align-items: center;
+    }
+  }
+
+  .contact__copy {
+    max-width: 32rem;
+    margin-block-start: 1.25rem;
+  }
+
+  .contact__actions {
+    margin-block-start: var(--s-3);
+  }
+
+  .contact__channels {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .contact__channels a,
+  .contact__channels p {
+    display: grid;
+    gap: 0.2rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+    transition: background-color var(--t-base) var(--ease);
+  }
+
+  .contact__channels span {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .contact__channels p {
+    color: var(--on-surface-muted);
+  }
+
+  @include hover-ok {
+    .contact__channels a:hover {
+      background: var(--navy-700);
+    }
+  }
+</style>

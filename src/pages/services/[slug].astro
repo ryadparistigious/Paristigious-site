@@ -1,0 +1,595 @@
+---
+import { Picture } from 'astro:assets';
+import { getCollection, render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import Base from '../../layouts/Base.astro';
+import Button from '../../components/Button.astro';
+import Faq from '../../components/Faq.astro';
+import { site, whatsappHref } from '../../lib/site';
+
+export const getStaticPaths = (async () => {
+  const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+  return services.map((service, index) => ({
+    params: { slug: service.id },
+    props: {
+      service,
+      // Enchaînement éditorial : on peut parcourir toutes les prestations
+      // sans jamais repasser par le menu. (règle 39)
+      next: services[(index + 1) % services.length]!,
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+const { service, next } = Astro.props;
+const { data } = service;
+const { Content } = await render(service);
+
+const wa = whatsappHref(data.whatsappContext);
+const quoteHref = `/demande-de-devis?besoin=${data.need}`;
+
+// FAQ de la page exposée aux moteurs, avec le même contenu que celui affiché.
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: data.faq.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
+};
+
+const sections = [
+  { id: 'approche', label: 'Approche' },
+  { id: 'prestations', label: 'Prestations' },
+  { id: 'organisation', label: 'Organisation' },
+  { id: 'questions', label: 'Questions' },
+  { id: 'devis', label: 'Devis' },
+];
+---
+
+<Base
+  title={`${data.title} — Paristigious`}
+  description={data.description}
+  overHero
+  ctaNeed={data.need}
+  ctaContext={data.whatsappContext}
+>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(faqJsonLd)} />
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero on-dark">
+    <Picture
+      class="hero__media"
+      src={data.cover}
+      alt={data.coverAlt}
+      widths={[640, 960, 1280, 1600]}
+      sizes="100vw"
+      formats={['avif', 'webp']}
+      loading="eager"
+      fetchpriority="high"
+      decoding="sync"
+      layout="full-width"
+    />
+    <div class="hero__scrim"></div>
+
+    <div class="container hero__content">
+      <nav class="crumbs" aria-label="Fil d’Ariane">
+        <a href="/">Accueil</a>
+        <span aria-hidden="true">/</span>
+        <a href="/services">Services</a>
+      </nav>
+      <p class="kicker">N° {String(data.order).padStart(2, '0')} — {data.title}</p>
+      <h1>{data.headline}</h1>
+      <p class="hero__tag">{data.tagline}</p>
+      <div class="hero__actions">
+        <Button href={quoteHref} variant="brass" size="lg" arrow>Demander un devis</Button>
+        {wa && <Button href={wa} variant="outline" size="lg" target="_blank" rel="noopener">WhatsApp</Button>}
+      </div>
+    </div>
+  </section>
+
+  {/* Navigation secondaire : utile parce que la page est longue et
+      réellement segmentée. Elle reste un simple jeu d'ancres. (règle 29) */}
+  <nav class="subnav" aria-label="Sections de la page" data-scrollspy>
+    <ul class="container">
+      {sections.map((s) => <li><a href={`#${s.id}`}>{s.label}</a></li>)}
+    </ul>
+  </nav>
+
+  <!-- ═══════════ APPROCHE ═══════════ -->
+  <section class="section approach" id="approche">
+    <div class="container approach__grid">
+      <div class="approach__intro" data-reveal>
+        <p class="kicker">Notre approche</p>
+        <div class="prose"><Content /></div>
+      </div>
+
+      <ul class="highlights">
+        {
+          data.highlights.map((h, i) => (
+            <li data-reveal data-reveal-delay={i * 60}>
+              <span class="numeral">{String(i + 1).padStart(2, '0')}</span>
+              <h2>{h.title}</h2>
+              <p class="muted">{h.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════ PRESTATIONS ═══════════ -->
+  <section class="section includes on-dark" id="prestations">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="kicker">Ce que cela couvre</p>
+        <h2>Les cas les plus<br /><em>fréquents.</em></h2>
+      </div>
+      <ul class="tags" data-reveal data-reveal-delay="60">
+        {data.includes.map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════ ORGANISATION ═══════════ -->
+  <section class="section steps" id="organisation">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="kicker">Comment cela s’organise</p>
+        <h2>De la demande<br />à la <em>prise en charge.</em></h2>
+      </div>
+      <ol class="steps__list">
+        {
+          data.steps.map((step, i) => (
+            <li data-reveal data-reveal-delay={i * 60}>
+              <span class="steps__num">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{step.title}</h3>
+              <p class="muted">{step.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══════════ QUESTIONS ═══════════ -->
+  <section class="section faq-block" id="questions">
+    <div class="container faq-block__grid">
+      <div class="section-head" data-reveal>
+        <p class="kicker">Questions fréquentes</p>
+        <h2>Sur cette<br /><em>prestation.</em></h2>
+        <p>
+          Une question qui n’est pas ici ? Écrivez-nous à <a href={`mailto:${site.email}`}>{site.email}</a>.
+        </p>
+      </div>
+      <div data-reveal data-reveal-delay="60">
+        <Faq items={data.faq} name={`faq-${service.id}`} />
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ DEVIS ═══════════ -->
+  <section class="section cta on-dark" id="devis" data-cta-suppressor>
+    <div class="container cta__inner" data-reveal>
+      <p class="kicker kicker--plain">Passer à la suite</p>
+      <h2>Parlons de votre<br /><em>{data.title.toLowerCase()}.</em></h2>
+      <p class="muted">
+        Le formulaire s’ouvrira déjà positionné sur cette prestation : vous ne
+        recommencez rien.
+      </p>
+      <div class="cta__actions">
+        <Button href={quoteHref} variant="brass" size="lg" arrow>Demander un devis</Button>
+        <Button href={`mailto:${site.email}`} variant="outline" size="lg">{site.email}</Button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ SERVICE SUIVANT ═══════════ -->
+  <a class="next" href={`/services/${next.id}`} data-astro-prefetch>
+    <Picture
+      class="next__media"
+      src={next.data.cover}
+      alt=""
+      widths={[600, 1000, 1400]}
+      sizes="100vw"
+      formats={['avif', 'webp']}
+      loading="lazy"
+      layout="full-width"
+    />
+    <span class="next__scrim"></span>
+    <span class="container next__body">
+      <span class="next__label">Service suivant</span>
+      <span class="next__num">{String(next.data.order).padStart(2, '0')}</span>
+      <span class="next__title">{next.data.title}</span>
+      <span class="next__arrow" aria-hidden="true">→</span>
+    </span>
+  </a>
+</Base>
+
+<style lang="scss">
+  /* ═══════════ HERO ═══════════ */
+  .hero {
+    position: relative;
+    display: grid;
+    align-items: end;
+    min-block-size: min(78svh, 44rem);
+    padding-block: calc(var(--header-h) + 3rem) clamp(3rem, 8vh, 5rem);
+    background: var(--navy-950);
+    isolation: isolate;
+    overflow: clip;
+  }
+
+  .hero :global(.hero__media) {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    object-position: center 55%;
+  }
+
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(
+        180deg,
+        rgb(5 13 25 / 62%) 0%,
+        rgb(5 13 25 / 34%) 32%,
+        rgb(5 13 25 / 76%) 64%,
+        rgb(5 13 25 / 94%) 100%
+      ),
+      linear-gradient(90deg, rgb(5 13 25 / 58%) 0%, rgb(5 13 25 / 10%) 68%);
+  }
+
+  .hero__content {
+    position: relative;
+  }
+
+  .crumbs {
+    display: flex;
+    gap: 0.6rem;
+    margin-block-end: 1.5rem;
+    font-size: 0.75rem;
+    color: color-mix(in srgb, var(--ivory-100) 76%, transparent);
+  }
+
+  .crumbs a {
+    padding-block: 0.25rem;
+    transition: color var(--t-fast) var(--ease);
+  }
+
+  @include hover-ok {
+    .crumbs a:hover {
+      color: var(--brass-400);
+    }
+  }
+
+  .hero h1 {
+    margin-block: 1.25rem 1.25rem;
+    font-size: clamp(2.6rem, 5vw, 4.8rem);
+    max-width: 48rem;
+  }
+
+  .hero__tag {
+    max-width: 36rem;
+    font-family: var(--serif);
+    font-size: var(--step-1);
+    font-weight: 300;
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--ivory-100) 90%, transparent);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block-start: 2rem;
+  }
+
+  /* Transform seul : le texte est lisible dès la première frame et reste
+     éligible au LCP. (voir la note détaillée sur le hero de l'accueil) */
+  @include motion-ok {
+    :global(html.js) .hero__content > * {
+      animation: hero-in 520ms var(--ease-out) both;
+    }
+
+    :global(html.js) .hero__content > :nth-child(2) { animation-delay: 50ms; }
+    :global(html.js) .hero__content > :nth-child(3) { animation-delay: 100ms; }
+    :global(html.js) .hero__content > :nth-child(4) { animation-delay: 140ms; }
+    :global(html.js) .hero__content > :nth-child(5) { animation-delay: 180ms; }
+  }
+
+  @keyframes hero-in {
+    from {
+      transform: translate3d(0, 16px, 0);
+    }
+  }
+
+  /* ═══════════ SOUS-NAVIGATION ═══════════ */
+  .subnav {
+    position: sticky;
+    inset-block-start: var(--header-h);
+    z-index: 40;
+    background: color-mix(in srgb, var(--ivory-50) 92%, transparent);
+    border-block-end: 1px solid var(--border);
+  }
+
+  @supports (backdrop-filter: blur(1px)) {
+    .subnav {
+      background: color-mix(in srgb, var(--ivory-50) 78%, transparent);
+      backdrop-filter: blur(12px);
+    }
+  }
+
+  :global(html.is-scrolled) .subnav {
+    inset-block-start: var(--header-compact-h);
+  }
+
+  #approche, #prestations, #organisation, #questions, #devis {
+    scroll-margin-top: 3.5rem;
+  }
+
+  .subnav ul {
+    display: flex;
+    gap: clamp(1rem, 3vw, 2.25rem);
+    overflow-x: auto;
+    scrollbar-width: none;
+    white-space: nowrap;
+  }
+
+  .subnav ul::-webkit-scrollbar {
+    display: none;
+  }
+
+  .subnav a {
+    position: relative;
+    display: inline-block;
+    padding-block: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--on-surface-muted);
+    transition: color var(--t-fast) var(--ease);
+  }
+
+  .subnav a::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform var(--t-base) var(--ease-out);
+  }
+
+  .subnav a[data-current] {
+    color: var(--on-surface);
+  }
+
+  .subnav a[data-current]::after {
+    transform: scaleX(1);
+  }
+
+  @include hover-ok {
+    .subnav a:hover {
+      color: var(--on-surface);
+    }
+  }
+
+  /* ═══════════ APPROCHE ═══════════ */
+  .approach__grid {
+    display: grid;
+    gap: var(--s-5);
+  }
+
+  @include from($bp-lg) {
+    .approach__grid {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: var(--s-6);
+      align-items: start;
+    }
+  }
+
+  .prose {
+    margin-block-start: var(--s-3);
+    display: grid;
+    gap: 1.1rem;
+    max-width: 34rem;
+    font-family: var(--serif);
+    font-size: var(--step-1);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .highlights {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  @include from($bp-md) {
+    .highlights {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .highlights h2 {
+    margin-block: 0.5rem 0.5rem;
+    font-size: var(--step-2);
+  }
+
+  .highlights p {
+    font-size: 0.95rem;
+  }
+
+  /* ═══════════ PRESTATIONS ═══════════ */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .tags li {
+    padding: 0.6rem 1.15rem;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.85rem;
+    color: var(--on-surface-muted);
+  }
+
+  /* ═══════════ ORGANISATION ═══════════ */
+  .steps__list {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  @include from($bp-md) {
+    .steps__list {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--s-5);
+    }
+  }
+
+  .steps__num {
+    display: block;
+    padding-block-end: 1rem;
+    margin-block-end: 1.1rem;
+    border-block-end: 1px solid var(--accent);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: var(--step-2);
+    color: var(--accent);
+  }
+
+  .steps__list h3 {
+    margin-block-end: 0.5rem;
+    font-size: var(--step-2);
+  }
+
+  .steps__list p {
+    font-size: 0.95rem;
+  }
+
+  /* ═══════════ FAQ ═══════════ */
+  .faq-block__grid {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  @include from($bp-lg) {
+    .faq-block__grid {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: var(--s-6);
+      align-items: start;
+    }
+
+    .faq-block .section-head {
+      position: sticky;
+      inset-block-start: calc(var(--header-h) + 5rem);
+      margin-bottom: 0;
+    }
+  }
+
+  .faq-block a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* ═══════════ CTA ═══════════ */
+  .cta__inner {
+    display: grid;
+    justify-items: center;
+    gap: 1.25rem;
+    max-width: 42rem;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-block-start: 0.5rem;
+  }
+
+  /* ═══════════ SERVICE SUIVANT ═══════════ */
+  .next {
+    position: relative;
+    display: grid;
+    align-items: center;
+    min-block-size: 16rem;
+    background: var(--navy-950);
+    isolation: isolate;
+    overflow: clip;
+  }
+
+  .next :global(.next__media) {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    transition: transform 700ms var(--ease-out);
+  }
+
+  .next__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(90deg, rgb(5 13 25 / 88%) 0%, rgb(5 13 25 / 55%) 100%);
+  }
+
+  .next__body {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.35rem 1.25rem;
+    padding-block: 2rem;
+  }
+
+  .next__label {
+    grid-column: 1 / -1;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brass-400);
+  }
+
+  .next__num {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: var(--step-2);
+    color: var(--brass-400);
+  }
+
+  .next__title {
+    font-family: var(--serif);
+    font-size: var(--step-3);
+    font-weight: 300;
+    letter-spacing: -0.025em;
+  }
+
+  .next__arrow {
+    font-size: 1.5rem;
+    color: var(--brass-400);
+    transition: transform var(--t-base) var(--ease-out);
+  }
+
+  @include hover-ok {
+    .next:hover :global(.next__media) {
+      transform: scale(1.03);
+    }
+
+    .next:hover .next__arrow {
+      transform: translate3d(6px, 0, 0);
+    }
+  }
+</style>

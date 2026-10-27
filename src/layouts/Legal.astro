@@ -1,0 +1,84 @@
+---
+import Base from './Base.astro';
+import Button from '../components/Button.astro';
+
+interface Props {
+  title: string;
+  kicker: string;
+  description: string;
+}
+
+const { title, kicker, description } = Astro.props;
+---
+
+<Base title={`${title} | Paristigious`} description={description} noindex showStickyCta={false}>
+  <article class="legal">
+    <div class="container container--narrow">
+      <p class="kicker">{kicker}</p>
+      <h1>{title}</h1>
+      <div class="prose">
+        <slot />
+      </div>
+      <div class="legal__back">
+        <Button href="/" variant="outline">Retour à l’accueil</Button>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style lang="scss">
+  .legal {
+    padding-block: calc(var(--header-h) + clamp(3rem, 8vw, 5rem)) var(--s-7);
+  }
+
+  h1 {
+    margin-block: 1.25rem var(--s-4);
+    font-size: var(--step-4);
+  }
+
+  .prose {
+    display: grid;
+    gap: 1.25rem;
+    color: var(--on-surface-muted);
+  }
+
+  .prose :global(h2) {
+    margin-block-start: var(--s-3);
+    font-size: var(--step-2);
+    color: var(--on-surface);
+  }
+
+  .prose :global(a) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .prose :global(strong) {
+    color: var(--on-surface);
+  }
+
+  .prose :global(ul) {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .prose :global(li) {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .prose :global(li)::before {
+    content: '';
+    flex: none;
+    inline-size: 5px;
+    block-size: 5px;
+    margin-block-start: 0.65rem;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .legal__back {
+    margin-block-start: var(--s-5);
+  }
+</style>

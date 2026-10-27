@@ -1,0 +1,24 @@
+# Build
+dist/
+.astro/
+node_modules/
+
+# Cache d'optimisation des images (régénéré à la build)
+node_modules/.astro/
+
+# Sorties de QA
+qa-*.png
+.diag.mjs
+
+# Local / environnement
+.env
+.env.*
+!.env.example
+.preview.log
+.local-server.log
+.local-server.err.log
+.local-server.mjs
+.edge-qa*/
+.qa-*/
+.visual-review/
+.dev.log

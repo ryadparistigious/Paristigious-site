@@ -1,0 +1,28 @@
+// ─────────────────────────────────────────────────────────────
+// Paristigious — jetons SCSS (breakpoints + mixins uniquement).
+// Les couleurs/espacements vivent en custom properties CSS,
+// pour rester lisibles et surchargeables au runtime.
+// ─────────────────────────────────────────────────────────────
+
+$bp-sm: 40rem; // 640px
+$bp-md: 52rem; // 832px
+$bp-lg: 64rem; // 1024px
+$bp-xl: 80rem; // 1280px
+
+@mixin from($bp) {
+  @media (min-width: $bp) {
+    @content;
+  }
+}
+
+@mixin motion-ok {
+  @media (prefers-reduced-motion: no-preference) {
+    @content;
+  }
+}
+
+@mixin hover-ok {
+  @media (hover: hover) and (pointer: fine) {
+    @content;
+  }
+}

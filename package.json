@@ -1,0 +1,27 @@
+{
+  "name": "paristigious",
+  "type": "module",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "assets": "node scripts/generate-assets.mjs",
+    "prebuild": "node scripts/generate-assets.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "qa": "node scripts/qa.mjs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.2.10",
+    "sass": "^1.103.1",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "puppeteer-core": "^25.9.0",
+    "sharp": "^0.35.4",
+    "typescript": "^5.9.3"
+  }
+}

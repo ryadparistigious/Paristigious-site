@@ -1,0 +1,13 @@
+# Anciennes URL du site v1 -> nouvelles pages (301, le jus SEO est conservé).
+/index.html                      /                              301
+/paristigious-site.html          /                              301
+/service-transferts-aeroport.html /services/transferts          301
+/service-accueil-vip.html        /services/transferts           301
+/service-longue-duree.html       /services/mise-a-disposition   301
+/service-evenementiel-vip.html   /services/evenements           301
+/service-mariage.html            /services/mariage              301
+/service-excursions-privees.html /services/excursions           301
+/service-ambassades.html         /services/business             301
+/partenaires.html                /partenaires                   301
+/mentions-legales.html           /mentions-legales              301
+/confidentialite.html            /confidentialite               301

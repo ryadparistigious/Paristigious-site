@@ -1,0 +1,694 @@
+---
+import { needs } from '../lib/quote';
+import { site } from '../lib/site';
+import FormField from './FormField.astro';
+import Button from './Button.astro';
+
+/**
+ * Formulaire de devis progressif.
+ *
+ * Le HTML contient les trois étapes et les six variantes de l'étape 2. Sans
+ * JavaScript, tout est affiché à plat et le formulaire reste envoyable ;
+ * avec JavaScript, on ne montre que ce qui concerne réellement le visiteur.
+ */
+
+const endpoint = import.meta.env.PUBLIC_QUOTE_ENDPOINT as string | undefined;
+const mailAction = `mailto:${site.email}?subject=${encodeURIComponent('Demande de devis — Paristigious')}`;
+---
+
+<div class="quote">
+  <form
+    class="quote__form"
+    id="quote-form"
+    data-quote-form
+    method="post"
+    action={endpoint ?? mailAction}
+    enctype={endpoint ? undefined : 'text/plain'}
+    data-endpoint={endpoint}
+    novalidate
+  >
+    {/* Progression — décorative pour le lecteur d'écran, qui suit déjà les
+        légendes de chaque étape. Masquée sans JS puisqu'il n'y a plus d'étapes. */}
+    <ol class="progress" data-progress aria-hidden="true">
+      <li data-step-marker="1"><span>01</span>Votre besoin</li>
+      <li data-step-marker="2"><span>02</span>Votre demande</li>
+      <li data-step-marker="3"><span>03</span>Vos coordonnées</li>
+    </ol>
+
+    <!-- ─── ÉTAPE 1 ─── -->
+    <fieldset class="step" data-step="1">
+      <legend class="step__legend">
+        <span class="step__num">01</span>
+        Quel est votre besoin ?
+      </legend>
+      <p class="step__hint">
+        Choisissez la prestation qui correspond à votre programme.
+      </p>
+
+      <ul class="needs">
+        {
+          needs.map((need) => (
+            <li>
+              <label class="need">
+                <input type="radio" name="need" value={need.slug} data-field="need" required />
+                <span class="need__box">
+                  <span class="need__label">{need.label}</span>
+                  <span class="need__hint">{need.hint}</span>
+                  <span class="need__check" aria-hidden="true">
+                    <svg viewBox="0 0 14 11" width="14" height="11">
+                      <path d="M1 5.5L5 9.5L13 1" fill="none" stroke="currentColor" stroke-width="1.8" />
+                    </svg>
+                  </span>
+                </span>
+              </label>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="field__error" data-error-for="need" aria-live="polite"></p>
+    </fieldset>
+
+    <!-- ─── ÉTAPE 2 ─── -->
+    <fieldset class="step" data-step="2">
+      <legend class="step__legend">
+        <span class="step__num">02</span>
+        Votre demande
+      </legend>
+
+      {
+        needs.map((need) => (
+          <div class="panel" data-need-panel={need.slug}>
+            <p class="panel__label">{need.label}</p>
+            <div class="grid">
+              {need.fields.map((field) => (
+                <FormField field={field} scope={need.slug} />
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </fieldset>
+
+    <!-- ─── ÉTAPE 3 ─── -->
+    <fieldset class="step" data-step="3">
+      <legend class="step__legend">
+        <span class="step__num">03</span>
+        Vos coordonnées
+      </legend>
+
+      <div class="grid">
+        <div class="field">
+          <label for="q-name">Nom complet <span class="field__req" aria-hidden="true">*</span></label>
+          <input id="q-name" name="name" data-field="name" type="text" autocomplete="name" aria-describedby="q-name-error" />
+          <p class="field__error" id="q-name-error" data-error-for="name" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="q-email">Email <span class="field__req" aria-hidden="true">*</span></label>
+          <input
+            id="q-email"
+            name="email"
+            data-field="email"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            aria-describedby="q-email-error"
+          />
+          <p class="field__error" id="q-email-error" data-error-for="email" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="q-phone">Téléphone <span class="field__req" aria-hidden="true">*</span></label>
+          <input
+            id="q-phone"
+            name="phone"
+            data-field="phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            aria-describedby="q-phone-error"
+          />
+          <p class="field__error" id="q-phone-error" data-error-for="phone" aria-live="polite"></p>
+        </div>
+
+        <div class="field field--wide">
+          <label for="q-message">Précisions</label>
+          <textarea id="q-message" name="message" data-field="message" rows="4"
+            placeholder="Tout ce qui nous aiderait à préparer une proposition juste."></textarea>
+        </div>
+
+        <div class="field field--wide">
+          <label class="consent">
+            <input type="checkbox" name="consent" data-field="consent" aria-describedby="q-consent-error" />
+            <span>
+              J’accepte que ces informations soient utilisées pour traiter ma demande.
+              <span class="field__req" aria-hidden="true">*</span>
+            </span>
+          </label>
+          <p class="field__error" id="q-consent-error" data-error-for="consent" aria-live="polite"></p>
+        </div>
+      </div>
+
+      {/* Récapitulatif rempli par le script juste avant l'envoi. */}
+      <div class="recap" data-recap hidden>
+        <p class="recap__title">Récapitulatif</p>
+        <dl data-recap-list></dl>
+      </div>
+    </fieldset>
+
+    <!-- ─── NAVIGATION ─── -->
+    <div class="actions">
+      <button class="back" type="button" data-prev-step hidden>
+        <span aria-hidden="true">←</span> Retour
+      </button>
+
+      <Button type="button" variant="brass" size="lg" arrow class="next" data-next-step hidden>
+        Continuer
+      </Button>
+
+      <Button type="submit" variant="brass" size="lg" arrow data-submit>
+        Demander mon devis
+      </Button>
+    </div>
+
+    {/* Erreur globale : réseau, serveur, ou récapitulatif des champs manquants. */}
+    <p class="form-error" data-form-error role="alert"></p>
+
+    <noscript>
+      <p class="ns-note">
+        Ce formulaire fonctionne sans JavaScript : toutes les questions sont
+        affichées et l’envoi ouvrira votre messagerie. Vous pouvez aussi nous
+        écrire directement à <a href={`mailto:${site.email}`}>{site.email}</a>.
+      </p>
+    </noscript>
+  </form>
+
+  <!-- ─── ÉCRAN DE CONFIRMATION ─── -->
+  <div class="done" data-success hidden tabindex="-1">
+    <span class="done__mark" aria-hidden="true">
+      <svg viewBox="0 0 22 17" width="22" height="17">
+        <path d="M1 8.5L8 15.5L21 1.5" fill="none" stroke="currentColor" stroke-width="2" />
+      </svg>
+    </span>
+    <h2>Votre demande a bien été transmise.</h2>
+    <p data-success-detail></p>
+    <ol class="done__next">
+      <li><span>01</span>Nous étudions votre demande et vérifions les disponibilités.</li>
+      <li><span>02</span>Vous recevez une proposition détaillée, avec les conditions applicables.</li>
+      <li><span>03</span>Après votre accord, les informations de prise en charge vous sont communiquées.</li>
+    </ol>
+    <div class="done__actions">
+      <Button href="/" variant="outline">Retour à l’accueil</Button>
+      <Button href={`mailto:${site.email}`} variant="ghost" arrow>{site.email}</Button>
+    </div>
+  </div>
+</div>
+
+<style lang="scss">
+  .quote {
+    max-width: 52rem;
+  }
+
+  .quote__form[hidden] {
+    display: none;
+  }
+
+  /* ─── Progression ─────────────────────────────────────── */
+  .progress {
+    display: none;
+    gap: 0.75rem;
+    margin-block-end: var(--s-4);
+  }
+
+  :global(html.js) .progress {
+    display: flex;
+  }
+
+  .progress li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    padding-block-start: 0.7rem;
+    border-block-start: 2px solid var(--border);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--on-surface-muted);
+    transition:
+      color var(--t-base) var(--ease),
+      border-color var(--t-base) var(--ease);
+  }
+
+  .progress li span {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.85rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .progress li[data-state='current'],
+  .progress li[data-state='done'] {
+    border-block-start-color: var(--accent);
+    color: var(--on-surface);
+  }
+
+  .progress li[data-state='current'] span {
+    color: var(--accent);
+  }
+
+  /* Sur petit écran, seul le libellé de l'étape en cours est écrit ; les
+     autres se réduisent à leur numéro. L'étape courante reçoit assez de
+     place pour tenir sur une ligne. */
+  @media (max-width: 40rem) {
+    .progress li:not([data-state='current']) {
+      flex: 0 0 auto;
+      font-size: 0;
+      gap: 0;
+    }
+
+    .progress li:not([data-state='current']) span {
+      font-size: 0.85rem;
+    }
+
+    .progress li[data-state='current'] {
+      flex: 1 1 auto;
+      white-space: nowrap;
+    }
+  }
+
+  /* ─── Étapes ──────────────────────────────────────────── */
+  .step {
+    margin-block-end: var(--s-4);
+  }
+
+  /* Une étape masquée l'est réellement : ses champs sortent de l'ordre de
+     tabulation, donc le clavier ne peut pas atterrir dans l'invisible. */
+  .step[hidden] {
+    display: none;
+  }
+
+  .step__legend {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    margin-block-end: 0.6rem;
+    font-family: var(--serif);
+    font-size: var(--step-2);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+  }
+
+  .step__num {
+    font-size: 0.7rem;
+    font-family: var(--sans);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+  }
+
+  .step__hint {
+    margin-block-end: var(--s-3);
+    color: var(--on-surface-muted);
+    font-size: 0.92rem;
+  }
+
+  @include motion-ok {
+    :global(html.js) .step:not([hidden]) {
+      animation: step-in 320ms var(--ease-out) both;
+    }
+  }
+
+  @keyframes step-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 12px, 0);
+    }
+  }
+
+  /* ─── Cartes de prestation ────────────────────────────── */
+  .needs {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  @include from($bp-sm) {
+    .needs {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .need {
+    display: block;
+    cursor: pointer;
+    block-size: 100%;
+  }
+
+  /* Le radio natif reste dans le DOM et garde le focus clavier : on ne le
+     masque pas avec display:none, on le rend seulement invisible. */
+  .need input {
+    position: absolute;
+    opacity: 0;
+    inline-size: 1px;
+    block-size: 1px;
+  }
+
+  .need__box {
+    position: relative;
+    display: grid;
+    gap: 0.2rem;
+    block-size: 100%;
+    min-block-size: 4.5rem;
+    padding: 1rem 3rem 1rem 1.1rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition:
+      border-color var(--t-fast) var(--ease),
+      background-color var(--t-fast) var(--ease);
+  }
+
+  @include hover-ok {
+    .need:hover .need__box {
+      border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    }
+  }
+
+  .need input:focus-visible + .need__box {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Sélection franchement visible : c'est le feedback le plus important
+     de toute l'étape 1. (règle 28) */
+  .need input:checked + .need__box {
+    border-color: var(--accent);
+    background: var(--navy-900);
+    color: var(--ivory-100);
+    --on-surface-muted: var(--ivory-300);
+    --accent: var(--brass-400);
+  }
+
+  .need__label {
+    font-weight: 600;
+    font-size: 0.98rem;
+  }
+
+  .need__hint {
+    font-size: 0.8rem;
+    color: var(--on-surface-muted);
+    line-height: 1.45;
+  }
+
+  .need__check {
+    position: absolute;
+    inset-block-start: 1.15rem;
+    inset-inline-end: 1.1rem;
+    display: grid;
+    place-items: center;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--accent-contrast);
+    opacity: 0.5;
+    transition:
+      opacity var(--t-fast) var(--ease),
+      background-color var(--t-fast) var(--ease),
+      border-color var(--t-fast) var(--ease);
+  }
+
+  .need__check svg {
+    opacity: 0;
+    transition: opacity var(--t-fast) var(--ease);
+  }
+
+  .need input:checked + .need__box .need__check {
+    opacity: 1;
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .need input:checked + .need__box .need__check svg {
+    opacity: 1;
+  }
+
+  /* ─── Panneaux conditionnels ──────────────────────────── */
+  .panel[hidden] {
+    display: none;
+  }
+
+  .panel__label {
+    display: none;
+  }
+
+  /* Sans JS les six panneaux sont visibles : chacun doit dire à quelle
+     prestation il correspond, sinon la liste devient illisible. */
+  :global(html:not(.js)) .panel {
+    padding-block-start: var(--s-3);
+    margin-block-start: var(--s-3);
+    border-block-start: 1px solid var(--border);
+  }
+
+  :global(html:not(.js)) .panel__label {
+    display: block;
+    margin-block-end: 1rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .grid {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  @include from($bp-sm) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* ─── Consentement ────────────────────────────────────── */
+  .consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.88rem;
+    font-weight: 400;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+
+  .consent input {
+    inline-size: 1.15rem;
+    block-size: 1.15rem;
+    min-block-size: 0;
+    margin-block-start: 0.15rem;
+    flex: none;
+    accent-color: var(--brass-600);
+  }
+
+  /* ─── Récapitulatif ───────────────────────────────────── */
+  .recap {
+    margin-block-start: var(--s-3);
+    padding: 1.25rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .recap[hidden] {
+    display: none;
+  }
+
+  .recap__title {
+    margin-block-end: 0.85rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .recap :global(dl) {
+    display: grid;
+    gap: 0.45rem 1rem;
+    font-size: 0.88rem;
+  }
+
+  @include from($bp-sm) {
+    .recap :global(dl) {
+      grid-template-columns: auto 1fr;
+    }
+  }
+
+  .recap :global(dt) {
+    color: var(--on-surface-muted);
+  }
+
+  .recap :global(dd) {
+    margin: 0;
+  }
+
+  /* ─── Actions ─────────────────────────────────────────── */
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-block-start: var(--s-4);
+  }
+
+  .actions > :global([hidden]) {
+    display: none;
+  }
+
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-block-size: 3rem;
+    padding-inline: 0.25rem;
+    border: 0;
+    background: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--on-surface-muted);
+    transition: color var(--t-fast) var(--ease);
+  }
+
+  .back span {
+    transition: transform var(--t-base) var(--ease-out);
+  }
+
+  @include hover-ok {
+    .back:hover {
+      color: var(--on-surface);
+    }
+
+    .back:hover span {
+      transform: translate3d(-3px, 0, 0);
+    }
+  }
+
+  .form-error {
+    margin-block-start: 1rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #b3372f;
+  }
+
+  .form-error:empty {
+    display: none;
+  }
+
+  .ns-note {
+    margin-block-start: 1.25rem;
+    padding: 1rem 1.15rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.88rem;
+  }
+
+  .ns-note a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .field__error {
+    min-block-size: 0;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #b3372f;
+  }
+
+  /* ─── Confirmation ────────────────────────────────────── */
+  .done[hidden] {
+    display: none;
+  }
+
+  .done {
+    display: grid;
+    gap: 1.1rem;
+    justify-items: start;
+    padding: clamp(1.75rem, 5vw, 3rem);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    outline: none;
+  }
+
+  @include motion-ok {
+    .done:not([hidden]) {
+      animation: step-in 380ms var(--ease-out) both;
+    }
+  }
+
+  .done__mark {
+    display: grid;
+    place-items: center;
+    inline-size: 3rem;
+    block-size: 3rem;
+    border-radius: 50%;
+    background: var(--azure-700);
+    color: #fff;
+  }
+
+  .done h2 {
+    font-size: var(--step-3);
+  }
+
+  .done > p {
+    color: var(--on-surface-muted);
+  }
+
+  .done__next {
+    display: grid;
+    gap: 0.85rem;
+    inline-size: 100%;
+    padding-block-start: var(--s-3);
+    border-block-start: 1px solid var(--border);
+  }
+
+  .done__next li {
+    display: flex;
+    gap: 0.85rem;
+    font-size: 0.92rem;
+    color: var(--on-surface-muted);
+  }
+
+  .done__next span {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--accent);
+    flex: none;
+  }
+
+  .done__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-block-start: 0.5rem;
+  }
+</style>
+
+<script>
+  import { initAddressAutocomplete } from '../scripts/address-autocomplete';
+  import { initQuoteForm } from '../scripts/quote-form';
+
+  initAddressAutocomplete();
+  initQuoteForm();
+</script>

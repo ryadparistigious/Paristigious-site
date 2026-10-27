@@ -1,0 +1,221 @@
+---
+/**
+ * Bouton / lien d'action unique du site.
+ * Rend un <a> quand `href` est fourni, un <button> sinon : jamais de div
+ * cliquable, donc clavier, focus et lecteurs d'écran fonctionnent d'office.
+ *
+ * États couverts en CSS pur (règle 7) : hover, focus-visible, :active,
+ * [disabled], [data-state="loading"], [data-state="success"].
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+type Variant = 'brass' | 'navy' | 'outline' | 'ghost';
+type Size = 'md' | 'sm' | 'lg';
+
+interface Props extends Omit<HTMLAttributes<'a'>, 'size'> {
+  href?: string;
+  variant?: Variant;
+  size?: Size;
+  /** Flèche animée à droite du libellé. */
+  arrow?: boolean | 'diagonal' | 'down';
+  type?: 'button' | 'submit' | 'reset';
+  full?: boolean;
+}
+
+const {
+  href,
+  variant = 'brass',
+  size = 'md',
+  arrow = false,
+  type = 'button',
+  full = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const Tag = href ? 'a' : 'button';
+const arrowGlyph = arrow === 'diagonal' ? '↗' : arrow === 'down' ? '↓' : '→';
+const classes = ['btn', `btn--${variant}`, `btn--${size}`, full && 'btn--full', className];
+---
+
+<Tag
+  class:list={classes}
+  href={href}
+  type={href ? undefined : type}
+  data-arrow={arrow ? (arrow === true ? 'right' : arrow) : undefined}
+  {...rest}
+>
+  <span class="btn__label"><slot /></span>
+  {arrow && <span class="btn__arrow" aria-hidden="true">{arrowGlyph}</span>}
+  <span class="btn__spinner" aria-hidden="true"></span>
+</Tag>
+
+<style lang="scss">
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    /* 48px minimum : cible tactile confortable au pouce (règle 22) */
+    min-block-size: 3rem;
+    padding-inline: 1.5rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: none;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    text-align: center;
+    transition:
+      background-color var(--t-base) var(--ease),
+      border-color var(--t-base) var(--ease),
+      color var(--t-base) var(--ease),
+      transform var(--t-fast) var(--ease);
+  }
+
+  .btn--sm {
+    min-block-size: 2.6rem;
+    padding-inline: 1.1rem;
+    font-size: 0.72rem;
+  }
+
+  .btn--lg {
+    min-block-size: 3.5rem;
+    padding-inline: 2rem;
+  }
+
+  .btn--full {
+    inline-size: 100%;
+  }
+
+  /* Variantes — elles lisent les surfaces sémantiques, donc un même
+     bouton reste lisible sur ivoire comme sur navy. */
+  .btn--brass {
+    background: var(--brass-500);
+    border-color: var(--brass-500);
+    color: var(--navy-950);
+  }
+
+  .btn--navy {
+    background: var(--navy-800);
+    border-color: var(--navy-800);
+    color: var(--ivory-100);
+  }
+
+  .btn--outline {
+    border-color: color-mix(in srgb, var(--on-surface) 32%, transparent);
+    color: var(--on-surface);
+  }
+
+  .btn--ghost {
+    padding-inline: 0;
+    min-block-size: 2.25rem;
+    color: var(--accent);
+    letter-spacing: 0.14em;
+  }
+
+  /* Le hover n'est appliqué que sur pointeur fin : sur mobile, un bouton
+     ne doit jamais rester « collé » dans son état survolé. (règle 22) */
+  @include hover-ok {
+    .btn--brass:hover {
+      background: var(--brass-400);
+      border-color: var(--brass-400);
+    }
+
+    .btn--navy:hover {
+      background: var(--navy-700);
+      border-color: var(--navy-700);
+    }
+
+    .btn--outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn:hover .btn__arrow {
+      transform: translate3d(3px, 0, 0);
+    }
+
+    .btn--ghost:hover .btn__arrow {
+      transform: translate3d(5px, 0, 0);
+    }
+
+    .btn[data-arrow='diagonal']:hover .btn__arrow {
+      transform: translate3d(3px, -3px, 0);
+    }
+
+    .btn[data-arrow='down']:hover .btn__arrow {
+      transform: translate3d(0, 3px, 0);
+    }
+  }
+
+  /* Feedback pressé : léger enfoncement, pas de zoom (règle 7) */
+  .btn:active:not([disabled]) {
+    transform: translate3d(0, 1px, 0);
+  }
+
+  .btn[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn__arrow {
+    display: inline-block;
+    transition: transform var(--t-base) var(--ease-out);
+  }
+
+  .btn__label {
+    display: inline-block;
+  }
+
+  /* ─── État chargement ─────────────────────────────────── */
+  .btn__spinner {
+    position: absolute;
+    inline-size: 1rem;
+    block-size: 1rem;
+    border: 2px solid currentColor;
+    border-block-start-color: transparent;
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  .btn[data-state='loading'] {
+    pointer-events: none;
+  }
+
+  .btn[data-state='loading'] .btn__label,
+  .btn[data-state='loading'] .btn__arrow {
+    opacity: 0;
+  }
+
+  .btn[data-state='loading'] .btn__spinner {
+    opacity: 1;
+    animation: btn-spin 700ms linear infinite;
+  }
+
+  .btn[data-state='success'] {
+    background: var(--azure-700, #1f5c6b);
+    border-color: var(--azure-700, #1f5c6b);
+    color: #fff;
+    pointer-events: none;
+  }
+
+  @keyframes btn-spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn,
+    .btn__arrow {
+      transition-duration: 1ms;
+    }
+
+    .btn[data-state='loading'] .btn__spinner {
+      animation-duration: 1.4s;
+    }
+  }
+</style>

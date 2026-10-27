@@ -1,0 +1,83 @@
+---
+/**
+ * Retour en haut — petit, discret, et seulement après un défilement réel.
+ * Ancré sur une sentinelle placée à ~1,5 écran du haut. (règle 30)
+ */
+---
+
+<div class="btt-anchor" data-back-to-top-anchor aria-hidden="true"></div>
+
+<button class="btt" type="button" data-back-to-top aria-label="Revenir en haut de la page">
+  <svg viewBox="0 0 12 14" width="12" height="14" aria-hidden="true">
+    <path d="M6 13V2M1.5 6.5L6 2l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+  </svg>
+</button>
+
+<style lang="scss">
+  /* Bande invisible allant du haut de la page jusqu'à 150vh.
+     Un point unique posé à 150vh ne fonctionnerait pas : au chargement il est
+     déjà hors du viewport, et l'IntersectionObserver ne se redéclenche que
+     lorsqu'un élément TRAVERSE la frontière. Une bande, elle, est visible au
+     départ puis cesse de l'être : la bascule se produit vraiment. */
+  .btt-anchor {
+    position: absolute;
+    inset-block-start: 0;
+    inline-size: 1px;
+    block-size: 150vh;
+    pointer-events: none;
+  }
+
+  .btt {
+    position: fixed;
+    inset-block-end: 1.25rem;
+    inset-inline-end: 1.25rem;
+    z-index: 70;
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--ivory-50) 90%, transparent);
+    color: var(--ink);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(0, 8px, 0);
+    transition:
+      opacity var(--t-base) var(--ease),
+      transform var(--t-base) var(--ease-out),
+      visibility 0s linear var(--t-base),
+      background-color var(--t-fast) var(--ease);
+  }
+
+  .btt.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s, 0s, 0s, 0s;
+  }
+
+  @include hover-ok {
+    .btt:hover {
+      background: var(--ivory-50);
+    }
+  }
+
+  /* Sur mobile la barre CTA occupe déjà le bas de l'écran. */
+  @media (max-width: 52rem) {
+    .btt {
+      display: none;
+    }
+  }
+
+  :global(html:not(.js)) .btt {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btt {
+      transition-duration: 1ms, 1ms, 0s, 1ms;
+    }
+  }
+</style>

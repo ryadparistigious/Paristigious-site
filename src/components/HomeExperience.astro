@@ -1,0 +1,97 @@
+---
+import { Picture } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Button from './Button.astro';
+import ServiceCard from './ServiceCard.astro';
+import Carousel from './Carousel.astro';
+import Faq from './Faq.astro';
+import { generalFaq } from '../lib/faq';
+import { site, needs } from '../lib/site';
+import heroImage from '../assets/photo-maybach.jpg';
+import interiorImage from '../assets/interior-premium.jpg';
+import parisImage from '../assets/photo-terrasse.jpg';
+import azurImage from '../assets/cote-azur.jpg';
+import '../styles/home.scss';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+const commitments = [
+  { title: 'Tout commence avant vous.', body: 'Itinéraire anticipé, horaires vérifiés, vol suivi si nécessaire. Chaque détail est préparé avant votre arrivée.', label: 'L’anticipation' },
+  { title: 'Le sens du service.', body: 'Un chauffeur sélectionné, une conduite souple et la discrétion que vous attendez. Vous profitez simplement du trajet.', label: 'L’attention' },
+  { title: 'À votre rythme.', body: 'Une réunion se prolonge, le programme évolue. Votre interlocuteur coordonne la suite et vous accompagne.', label: 'La continuité' },
+];
+const fleet = [
+  { name: 'Berline Business', model: 'Mercedes Classe E ou équivalent', capacity: '3 passagers', use: 'Transferts & rendez-vous', need: 'transfert' },
+  { name: 'Berline First', model: 'Mercedes Classe S ou équivalent', capacity: '3 passagers', use: 'Mise à disposition & VIP', need: 'disposition' },
+  { name: 'Van Premium', model: 'Mercedes Classe V ou équivalent', capacity: '7 passagers', use: 'Voyages en groupe & bagages', need: 'transfert' },
+];
+---
+
+<Base title="Chauffeur privé haut de gamme Paris & Côte d’Azur | Paristigious" description={site.description} overHero>
+<div class="home">
+  <section class="hero on-dark" aria-labelledby="hero-title">
+    <div class="hero__visual">
+      <Picture class="hero__media" src={heroImage} alt="Berlines de prestige devant une fontaine, prêtes pour votre départ" widths={[640, 960, 1280, 1600]} sizes="(min-width: 64rem) 56vw, 100vw" formats={['avif', 'webp']} loading="eager" fetchpriority="high" decoding="sync" />
+      <div class="hero__caption"><span>L’exigence, à chaque kilomètre.</span><span aria-hidden="true">PARISTIGIOUS</span></div>
+    </div>
+    <div class="container hero__content"><div class="hero__text">
+      <p class="kicker">Maison de mobilité privée</p>
+      <h1 id="hero-title">L’art de<br />vous <em>conduire.</em></h1>
+      <p class="hero__copy">Votre temps est précieux.<br />Confiez-nous le chemin.</p>
+      <p class="hero__description">Chauffeur privé, transferts et voyages sur mesure.<br class="desktop-break" /> Une attention singulière, à chaque déplacement.</p>
+      <div class="hero__actions"><Button href="/demande-de-devis" variant="brass" arrow>Organiser mon trajet</Button><a class="text-link" href="#services">Explorer nos services <span aria-hidden="true">↗</span></a></div>
+      <div class="hero__places"><span>Paris</span><i aria-hidden="true">✦</i><span>Côte d’Azur</span><i aria-hidden="true">✦</i><span>Monaco</span></div>
+    </div></div>
+  </section>
+
+  <section class="booking-strip" aria-label="Préparer votre déplacement" data-cta-suppressor>
+    <form class="container booking-strip__inner" action="/demande-de-devis" method="get">
+      <div class="booking-strip__intro"><span class="eyebrow">Votre prochain départ</span><p>Où vous emmène-t-on ?</p></div>
+      <div class="booking-strip__field"><label for="quick-need">Je souhaite organiser</label><select id="quick-need" name="besoin">{needs.map(need => <option value={need.slug}>{need.label}</option>)}</select></div>
+      <div class="booking-strip__note"><span class="availability-dot" aria-hidden="true"></span><p>Un service sur mesure.<br /><span>Une proposition personnalisée.</span></p></div>
+      <Button type="submit" variant="navy" arrow>Préparer mon départ</Button>
+    </form>
+  </section>
+
+  <section class="section maison" id="maison">
+    <div class="container maison__grid" data-reveal><p class="kicker">L’esprit Paristigious</p><div><h2>Vous avez une destination.<br />Nous avons <em>le sens du détail.</em></h2><p>Un déplacement réussi se reconnaît à ce que vous n’avez pas eu à prévoir. À Paris comme sur la Côte d’Azur, nous orchestrons vos trajets avec ponctualité, discrétion et une attention portée à chaque instant.</p></div></div>
+    <ul class="container assurance"><li>Chauffeurs sélectionnés</li><li>Véhicules préparés</li><li>Disponibilité 7j/7</li><li>Confidentialité</li></ul>
+  </section>
+
+  <section class="section services" id="services"><div class="container">
+    <div class="section-heading" data-reveal><div><p class="kicker">Nos services</p><h2>À chaque occasion,<br /><em>la juste attention.</em></h2></div><p>Un transfert, une journée, un moment d’exception.<br />La même exigence, quelle que soit votre destination.</p></div>
+    <ul class="services__grid">{services.map((service, i) => <li data-reveal data-reveal-delay={(i % 3) * 60}><ServiceCard service={service} /></li>)}</ul>
+  </div></section>
+
+  <section class="signature on-dark" id="disposition">
+    <div class="signature__image"><Picture src={interiorImage} alt="Intérieur raffiné d’une berline avec sièges en cuir et espace généreux" widths={[540, 900, 1200]} sizes="(min-width: 64rem) 50vw, 100vw" formats={['avif', 'webp']} loading="lazy" /></div>
+    <div class="signature__copy" data-reveal><p class="kicker">Le luxe de prendre son temps</p><h2>Votre chauffeur.<br />Votre journée.<br /><em>Votre liberté.</em></h2><p>Des rendez-vous qui s’enchaînent, une escapade improvisée, un dîner qui se prolonge. Un même chauffeur, un véhicule dédié et toute la souplesse dont vous avez besoin.</p><ul class="signature__tags"><li>À l’heure</li><li>À la journée</li><li>En séjour</li></ul><Button href="/demande-de-devis?besoin=disposition" variant="outline" arrow>Découvrir la mise à disposition</Button></div>
+  </section>
+
+  <section class="section destinations" id="destinations"><div class="container">
+    <div class="section-heading" data-reveal><div><p class="kicker">Nos horizons</p><h2>Les plus belles adresses.<br /><em>Et le chemin pour y arriver.</em></h2></div><a class="text-link" href="/services/excursions">Imaginer une escapade <span aria-hidden="true">↗</span></a></div>
+    <div class="destinations__grid">
+      <a class="destination on-dark" href="/demande-de-devis?besoin=excursion" data-reveal><Picture src={parisImage} alt="Vue sur la tour Eiffel depuis une terrasse parisienne au coucher du soleil" widths={[540, 800, 1100]} sizes="(min-width: 64rem) 48vw, 90vw" formats={['avif', 'webp']} loading="lazy" /><div class="destination__body"><span class="eyebrow">L’élégance intemporelle</span><h3>Paris & Île-de-France</h3><p>Palaces, rendez-vous privés et échappées royales.</p><span class="destination__link">Organiser un séjour <span aria-hidden="true">↗</span></span></div></a>
+      <a class="destination on-dark" href="/demande-de-devis?besoin=excursion" data-reveal data-reveal-delay="80"><Picture src={azurImage} alt="Villa de la Côte d’Azur avec vue sur la Méditerranée" widths={[540, 800, 1100]} sizes="(min-width: 64rem) 48vw, 90vw" formats={['avif', 'webp']} loading="lazy" /><div class="destination__body"><span class="eyebrow">L’esprit Riviera</span><h3>Côte d’Azur & Monaco</h3><p>De Cannes à Saint-Tropez, au rythme de vos envies.</p><span class="destination__link">Organiser un séjour <span aria-hidden="true">↗</span></span></div></a>
+    </div>
+    <div class="destinations__beyond"><p><span>Votre horizon est ailleurs ?</span> France, longue distance et international sur demande.</p><a class="text-link" href="/demande-de-devis">Parlons de votre itinéraire <span aria-hidden="true">→</span></a></div>
+  </div></section>
+
+  <section class="section exigence" id="exigence"><div class="container">
+    <div class="section-heading" data-reveal><div><p class="kicker">La signature Paristigious</p><h2>Le meilleur du service.<br /><em>Sans jamais s’imposer.</em></h2></div><p>Ce que nous préparons en coulisses,<br />pour que vous n’ayez plus à y penser.</p></div>
+    <div class="commitments">{commitments.map((c, i) => <article data-reveal><div class="commitments__top"><span class="numeral">0{i + 1}</span><span class="eyebrow">{c.label}</span></div><h3>{c.title}</h3><p>{c.body}</p></article>)}</div>
+  </div></section>
+
+  <section class="section fleet on-dark" id="vehicules"><div class="container">
+    <div class="section-heading" data-reveal><div><p class="kicker">Le confort, à votre mesure</p><h2>À chacun<br /><em>son espace.</em></h2></div><p>Berline de direction, première classe ou van premium.<br />Le véhicule s’adapte à votre programme.</p></div>
+    <Carousel label="Catégories de véhicules" gridFrom="lg" gridColumns={3} itemWidth="min(82vw, 23rem)">{fleet.map((v, i) => <li class="vehicle" data-reveal><div class="vehicle__top"><span class="numeral">0{i + 1}</span><span class="vehicle__capacity">Jusqu’à {v.capacity}*</span></div><h3>{v.name}</h3><p class="vehicle__model">{v.model}</p><p class="vehicle__use">{v.use}</p><a class="text-link" href={`/demande-de-devis?besoin=${v.need}`}>Demander un devis <span aria-hidden="true">↗</span></a></li>)}</Carousel>
+    <p class="fineprint">* Modèles et capacités indicatifs, selon disponibilité et volume de bagages. La catégorie est confirmée avec votre proposition.</p>
+  </div></section>
+
+  <section class="section partners" id="partners"><div class="container partners__grid" data-reveal><div><p class="kicker">Paristigious Partners</p><h2>Votre réputation.<br /><em>Notre engagement.</em></h2></div><div class="partners__copy"><p>Hôtels, conciergeries, agences et entreprises : prolongez votre niveau de service jusque dans les déplacements de vos clients.</p><ul><li>Un interlocuteur dédié</li><li>Une organisation adaptée à vos volumes</li><li>Une facturation simplifiée</li></ul><Button href="/partenaires" variant="navy" arrow>Découvrir l’offre professionnels</Button></div></div></section>
+
+  <section class="section faq-section" id="faq"><div class="container faq-section__grid"><div data-reveal><p class="kicker">À votre écoute</p><h2>Quelques réponses.<br /><em>Avant de partir.</em></h2><p class="faq-section__copy">Une question particulière ?<br />Notre équipe est là pour vous accompagner.</p><a class="text-link" href={`mailto:${site.email}`}>Écrivez-nous <span aria-hidden="true">↗</span></a></div><div data-reveal><Faq items={generalFaq} name="faq-accueil" /></div></div></section>
+
+  <section class="section closing on-dark" data-cta-suppressor><div class="container closing__inner" data-reveal><span class="closing__star" aria-hidden="true">✦</span><p class="kicker kicker--plain">Votre prochain déplacement</p><h2>Le voyage commence<br /><em>par une conversation.</em></h2><p>Partagez vos envies. Nous nous occupons du reste.</p><Button href="/demande-de-devis" variant="brass" size="lg" arrow>Demander un devis</Button><span class="closing__note">Une demande sans engagement. Une attention personnalisée.</span></div></section>
+</div>
+</Base>

@@ -1,0 +1,71 @@
+---
+import Base from '../layouts/Base.astro';
+import Button from '../components/Button.astro';
+---
+
+<Base
+  title="Page introuvable | Paristigious"
+  description="Cette page n’existe pas ou plus."
+  noindex
+  showStickyCta={false}
+>
+  <section class="nf">
+    <div class="container container--narrow">
+      <p class="kicker">Erreur 404</p>
+      <h1>Cette adresse ne mène<br />plus <em>nulle part.</em></h1>
+      <p class="lead">La page a peut-être été déplacée. Voici les accès les plus utiles.</p>
+
+      <ul class="nf__links">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="/services">Nos services</a></li>
+        <li><a href="/partenaires">Espace professionnels</a></li>
+        <li><a href="/demande-de-devis">Demander un devis</a></li>
+      </ul>
+
+      <div class="nf__cta">
+        <Button href="/" variant="brass" arrow>Retour à l’accueil</Button>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style lang="scss">
+  .nf {
+    padding-block: calc(var(--header-h) + clamp(4rem, 12vw, 8rem)) var(--s-7);
+  }
+
+  h1 {
+    margin-block: 1.25rem 1.5rem;
+    font-size: var(--step-4);
+  }
+
+  .lead {
+    color: var(--on-surface-muted);
+  }
+
+  .nf__links {
+    display: grid;
+    margin-block-start: var(--s-4);
+    border-block-start: 1px solid var(--border);
+  }
+
+  .nf__links a {
+    display: block;
+    padding-block: 1rem;
+    border-block-end: 1px solid var(--border);
+    font-family: var(--serif);
+    font-size: var(--step-2);
+    font-weight: 300;
+    transition: color var(--t-fast) var(--ease);
+  }
+
+  @include hover-ok {
+    .nf__links a:hover {
+      color: var(--accent);
+    }
+  }
+
+  .nf__cta {
+    margin-block-start: var(--s-4);
+  }
+</style>

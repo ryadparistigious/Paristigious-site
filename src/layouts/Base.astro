@@ -1,0 +1,115 @@
+---
+import { Font } from 'astro:assets';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import StickyCta from '../components/StickyCta.astro';
+import BackToTop from '../components/BackToTop.astro';
+import { site } from '../lib/site';
+import '../styles/global.scss';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Chemin d'une image absolue pour les partages sociaux. */
+  ogImage?: string;
+  overHero?: boolean;
+  noindex?: boolean;
+  /** Contexte injecté dans le message WhatsApp et le préremplissage du devis. */
+  ctaNeed?: string;
+  ctaContext?: string;
+  showStickyCta?: boolean;
+}
+
+const {
+  title,
+  description,
+  ogImage = '/og-default.jpg',
+  overHero = false,
+  noindex = false,
+  ctaNeed,
+  ctaContext,
+  showStickyCta = true,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.site);
+const ogUrl = new URL(ogImage, Astro.site);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: site.name,
+  url: site.url,
+  description: site.description,
+  email: site.email,
+  areaServed: site.areaServed,
+  ...(site.phone ? { telephone: site.phone } : {}),
+};
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="theme-color" content="#0d2025" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={ogUrl.href} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {/* Polices auto-hébergées, sous-ensemble latin, métriques de repli
+        générées : pas de connexion tierce, pas de saut de texte. (règle 27)
+        Seuls les deux fichiers réellement critiques sont préchargés. */}
+    <Font cssVariable="--font-serif" preload />
+    <Font cssVariable="--font-sans" preload />
+    <Font cssVariable="--font-display" />
+
+    {/* Bloquant et minuscule : pose le drapeau « JS actif » avant le premier
+        rendu, pour que les états initiaux d'animation n'apparaissent jamais
+        sur un document qui ne pourrait pas les lever. */}
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Aller au contenu</a>
+    <Header overHero={overHero} />
+
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+
+    <Footer />
+    {showStickyCta && <StickyCta need={ctaNeed} context={ctaContext} />}
+    <BackToTop />
+
+    <script>
+      import '../scripts/enhance';
+    </script>
+  </body>
+</html>
+
+<style lang="scss">
+  /* <main> reçoit tabindex=-1 pour que le lien d'évitement lui donne
+     vraiment le focus ; on masque juste le contour du focus programmatique. */
+  main:focus {
+    outline: none;
+  }
+</style>

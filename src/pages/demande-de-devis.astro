@@ -1,0 +1,190 @@
+---
+import Base from '../layouts/Base.astro';
+import QuoteForm from '../components/QuoteForm.astro';
+import { site, phoneDisplay, whatsappHref } from '../lib/site';
+
+const wa = whatsappHref();
+---
+
+<Base
+  title="Demander un devis | Paristigious"
+  description="Décrivez votre déplacement en trois étapes. Nous préparons une proposition adaptée à votre programme, à Paris comme sur la Côte d’Azur."
+  showStickyCta={false}
+>
+  <section class="page">
+    {/* Trois blocs à plat dans la grille. Sur mobile ils s'empilent dans
+        l'ordre du document — titre court, PUIS formulaire, puis le reste —
+        pour que le visiteur qui vient de cliquer « Demander un devis » ait
+        la première question sous les yeux sans défiler. Sur grand écran, la
+        grille recompose la colonne de gauche. */}
+    <div class="container page__grid">
+      <header class="aside-head">
+        <p class="kicker">Demande de devis</p>
+        <h1>Votre prochain trajet.<br /><em>Notre attention.</em></h1>
+        <p class="lead">
+          Partagez votre programme en trois étapes. Nous préparons une proposition à votre mesure.
+        </p>
+      </header>
+
+      <div class="form-wrap">
+        <QuoteForm />
+      </div>
+
+      <aside class="aside-rest">
+        <ul class="aside__points">
+          <li>Chaque demande est étudiée individuellement, jamais tarifée automatiquement.</li>
+          <li>Vos réponses sont conservées si vous quittez la page en cours de route.</li>
+          <li>La proposition précise les conditions applicables avant tout engagement.</li>
+        </ul>
+
+        <div class="aside__contact">
+          <p class="aside__contact-title">Vous préférez écrire ?</p>
+          <a href={`mailto:${site.email}`}>{site.email}</a>
+          {site.phone && <a href={`tel:${site.phone}`}>{phoneDisplay()}</a>}
+          {wa && <a href={wa} target="_blank" rel="noopener">WhatsApp</a>}
+        </div>
+      </aside>
+    </div>
+  </section>
+</Base>
+
+<style lang="scss">
+  .page {
+    padding-block: calc(var(--header-h) + clamp(2.5rem, 6vw, 4.5rem)) var(--s-7);
+  }
+
+  .page__grid {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  @include from($bp-lg) {
+    .page__grid {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      column-gap: var(--s-6);
+      row-gap: var(--s-4);
+      align-items: start;
+    }
+
+    .aside-head {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .aside-rest {
+      grid-column: 1;
+      grid-row: 2;
+      position: sticky;
+      inset-block-start: calc(var(--header-h) + 2.5rem);
+    }
+
+    /* Le formulaire occupe toute la colonne de droite, en face des deux blocs. */
+    .form-wrap {
+      grid-column: 2;
+      grid-row: 1 / 3;
+    }
+  }
+
+  .aside-head h1 {
+    margin-block: 1.15rem 1rem;
+    font-size: var(--step-3);
+  }
+
+  @include from($bp-lg) {
+    .aside-head h1 {
+      font-size: var(--step-4);
+    }
+  }
+
+  .aside-head .lead {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    color: var(--on-surface-muted);
+  }
+
+  @include from($bp-lg) {
+    .aside-head .lead {
+      font-size: var(--step-1);
+    }
+  }
+
+  .aside__points {
+    display: grid;
+    gap: 0.85rem;
+    padding-block-start: var(--s-3);
+    border-block-start: 1px solid var(--border);
+    font-size: 0.92rem;
+    color: var(--on-surface-muted);
+  }
+
+  .aside__points li {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .aside__points li::before {
+    content: '';
+    flex: none;
+    inline-size: 5px;
+    block-size: 5px;
+    margin-block-start: 0.6rem;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .aside__contact {
+    display: grid;
+    gap: 0.35rem;
+    margin-block-start: var(--s-4);
+    padding-block-start: var(--s-3);
+    border-block-start: 1px solid var(--border);
+    font-size: 0.92rem;
+  }
+
+  .aside__contact-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-block-end: 0.35rem;
+  }
+
+  .aside__contact a,
+  .aside__contact p {
+    display: flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+  }
+
+  .aside__contact a {
+    color: var(--on-surface);
+    transition: color var(--t-fast) var(--ease);
+  }
+
+  .aside__contact p {
+    color: var(--on-surface-muted);
+  }
+
+  @include hover-ok {
+    .aside__contact a:hover {
+      color: var(--accent);
+    }
+  }
+
+  .form-wrap {
+    padding: clamp(1.5rem, 4vw, 2.75rem);
+    background: var(--ivory-50);
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 70px -40px rgb(13 32 37 / 25%);
+    border-block-start: 3px solid var(--brass-500);
+    border-radius: var(--radius-lg);
+  }
+
+  @media (max-width: 52rem) {
+    .form-wrap {
+      margin-inline: calc(var(--gutter) * -0.5);
+      padding-inline: clamp(1rem, 4vw, 1.75rem);
+    }
+  }
+</style>

@@ -1,0 +1,353 @@
+---
+import { mainNav, servicesNav, site, phoneDisplay, whatsappHref } from '../lib/site';
+
+const wa = whatsappHref();
+---
+
+<button
+  class="burger"
+  type="button"
+  id="menu-toggle"
+  aria-expanded="false"
+  aria-controls="mobile-menu"
+  aria-label="Ouvrir le menu"
+>
+  <span class="burger__bar"></span>
+  <span class="burger__bar"></span>
+</button>
+
+{/* <dialog> natif : focus trap, Escape et top-layer sont gérés par le
+    navigateur. Rien à réimplémenter, rien à casser. (règles 10 et 24) */}
+<dialog class="menu" id="mobile-menu" aria-label="Menu principal">
+  <div class="menu__bar">
+    <span class="wordmark">PARISTIGIOUS<span>.</span></span>
+    <button class="menu__close" type="button" data-menu-close aria-label="Fermer le menu">
+      <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+        <path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="1.4" fill="none"></path>
+      </svg>
+    </button>
+  </div>
+
+  <nav class="menu__nav" aria-label="Navigation mobile">
+    <ul class="menu__list">
+      {
+        mainNav.map((item, i) => (
+          <li style={`--i:${i}`}>
+            <a class="menu__link" href={item.href}>
+              <span class="menu__index">{String(i + 1).padStart(2, '0')}</span>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <details class="menu__sub">
+      <summary>
+        Tous les services
+        <span class="menu__chev" aria-hidden="true"></span>
+      </summary>
+      <ul>
+        {servicesNav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </details>
+
+    <a class="menu__cta" href="/demande-de-devis">
+      Demander un devis <span aria-hidden="true">→</span>
+    </a>
+  </nav>
+
+  <div class="menu__contact">
+    {
+      site.phone ? (
+        <a href={`tel:${site.phone}`}>
+          <span>Téléphone</span>
+          {phoneDisplay()}
+        </a>
+      ) : null
+    }
+    {
+      wa && (
+        <a href={wa} target="_blank" rel="noopener">
+          <span>WhatsApp</span>Écrire maintenant
+        </a>
+      )
+    }
+    <a href={`mailto:${site.email}`}>
+      <span>Email</span>{site.email}
+    </a>
+  </div>
+</dialog>
+
+<style lang="scss">
+  .burger {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    inline-size: 3rem;
+    block-size: 3rem;
+    padding: 0 0.7rem;
+    border: 0;
+    background: none;
+    color: inherit;
+  }
+
+  :global(html:not(.js)) .burger {
+    display: none;
+  }
+
+  @include from($bp-lg) {
+    .burger {
+      display: none;
+    }
+  }
+
+  .burger__bar {
+    display: block;
+    block-size: 1px;
+    background: currentColor;
+    transition: transform var(--t-base) var(--ease);
+  }
+
+  .burger__bar:last-child {
+    inline-size: 65%;
+    margin-inline-start: auto;
+  }
+
+  @include hover-ok {
+    .burger:hover .burger__bar:last-child {
+      inline-size: 100%;
+    }
+  }
+
+  /* ─── Panneau ─────────────────────────────────────────── */
+  .menu {
+    inline-size: 100%;
+    max-inline-size: 100%;
+    block-size: 100dvh;
+    max-block-size: 100dvh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--navy-900);
+    color: var(--ivory-100);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .menu::backdrop {
+    background: rgb(5 13 25 / 60%);
+  }
+
+  /* Animation d'ouverture/fermeture en CSS pur, sans classe pilotée en JS. */
+  @include motion-ok {
+    .menu {
+      opacity: 0;
+      transform: translate3d(0, 1.25rem, 0);
+      transition:
+        opacity 260ms var(--ease-out),
+        transform 300ms var(--ease-out),
+        overlay 300ms allow-discrete,
+        display 300ms allow-discrete;
+    }
+
+    .menu[open] {
+      opacity: 1;
+      transform: none;
+    }
+
+    @starting-style {
+      .menu[open] {
+        opacity: 0;
+        transform: translate3d(0, 1.25rem, 0);
+      }
+    }
+  }
+
+  .menu__bar {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--gutter);
+    block-size: var(--header-h);
+    background: var(--navy-900);
+    border-block-end: 1px solid var(--rule-light);
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+    font-family: var(--display);
+    font-size: 1.2rem;
+    letter-spacing: 0.09em;
+  }
+
+  .wordmark span {
+    color: var(--brass-500);
+  }
+
+  .menu__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 3rem;
+    block-size: 3rem;
+    margin-inline-end: -0.75rem;
+    border: 0;
+    background: none;
+    color: inherit;
+  }
+
+  .menu__nav {
+    padding: clamp(1.5rem, 6vw, 3rem) var(--gutter) 1.5rem;
+  }
+
+  .menu__list {
+    display: grid;
+  }
+
+  .menu__link {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    /* Cibles tactiles largement au-dessus de 48px (règle 22) */
+    padding-block: 0.85rem;
+    border-block-end: 1px solid var(--rule-light);
+    font-family: var(--serif);
+    font-size: clamp(1.75rem, 8vw, 2.5rem);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+  }
+
+  @include motion-ok {
+    .menu[open] .menu__list li {
+      animation: item-in 380ms var(--ease-out) both;
+      animation-delay: calc(90ms + var(--i) * 45ms);
+    }
+  }
+
+  @keyframes item-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+  }
+
+  .menu__index {
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    color: var(--brass-500);
+  }
+
+  .menu__sub {
+    margin-block-start: 1.5rem;
+    border-block-end: 1px solid var(--rule-light);
+  }
+
+  .menu__sub summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 1rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brass-400);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .menu__sub summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu__chev {
+    position: relative;
+    inline-size: 12px;
+    block-size: 12px;
+  }
+
+  .menu__chev::before,
+  .menu__chev::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inline-size: 12px;
+    block-size: 1px;
+    background: currentColor;
+    transition: transform var(--t-base) var(--ease);
+  }
+
+  .menu__chev::after {
+    transform: rotate(90deg);
+  }
+
+  .menu__sub[open] .menu__chev::after {
+    transform: rotate(0deg);
+  }
+
+  .menu__sub ul {
+    display: grid;
+    padding-block-end: 0.75rem;
+  }
+
+  .menu__sub a {
+    padding-block: 0.8rem;
+    font-size: 1rem;
+    color: color-mix(in srgb, var(--ivory-100) 78%, transparent);
+  }
+
+  .menu__cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-block-start: 2rem;
+    padding: 1.15rem 1.4rem;
+    background: var(--brass-500);
+    color: var(--navy-950);
+    border-radius: var(--radius);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .menu__contact {
+    display: grid;
+    gap: 1px;
+    margin-block-start: auto;
+    padding: 0 var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 2rem);
+  }
+
+  .menu__contact a,
+  .menu__contact p {
+    display: grid;
+    gap: 0.15rem;
+    padding-block: 0.9rem;
+    border-block-start: 1px solid var(--rule-light);
+    font-size: 0.95rem;
+  }
+
+  .menu__contact span {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--ivory-100) 50%, transparent);
+  }
+</style>
+
+<script>
+  import { initMobileMenu } from '../scripts/mobile-menu';
+  initMobileMenu();
+</script>

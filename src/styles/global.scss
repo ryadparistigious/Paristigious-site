@@ -1,0 +1,417 @@
+/* ═══════════════════════════════════════════════════════════
+   1. VARIABLES
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  /* Palette — navy profond, ivoire chaud, laiton */
+  --navy-950: #081316;
+  --navy-900: #0d2025;
+  --navy-800: #142b30;
+  --navy-700: #1d393e;
+  --navy-600: #2d484e;
+
+  --ivory-50: #fdfcf8;
+  --ivory-100: #f7f5ef;
+  --ivory-200: #eeece4;
+  --ivory-300: #dcd8cb;
+
+  --brass-400: #dfc496;
+  --brass-500: #cfb17f;
+  --brass-600: #8b6d3b;
+  --brass-700: #785b2d;
+
+  --azure-700: #1f5c6b;
+
+  --ink: #182b2e;
+  --ink-muted: #626b68;
+  --rule: color-mix(in srgb, var(--navy-800) 15%, transparent);
+  --rule-light: color-mix(in srgb, var(--ivory-100) 18%, transparent);
+
+  /* Surfaces sémantiques — un composant ne connaît jamais sa couleur de fond,
+     seulement --surface / --on-surface / --accent. C'est ce qui permet de
+     réutiliser boutons, cartes et liens sur ivoire comme sur navy. */
+  --surface: var(--ivory-100);
+  --surface-raised: var(--ivory-50);
+  --on-surface: var(--ink);
+  --on-surface-muted: var(--ink-muted);
+  --accent: var(--brass-600);
+  --accent-contrast: var(--navy-900);
+  --border: var(--rule);
+
+  /* Typographie — familles injectées par l'API Fonts d'Astro */
+  --serif: var(--font-serif), Georgia, serif;
+  --sans: var(--font-sans), system-ui, sans-serif;
+  --display: var(--font-display), Georgia, serif;
+
+  /* Échelle fluide : une interpolation par palier, zéro media query typo */
+  --step--1: clamp(0.8rem, 0.77rem + 0.15vw, 0.875rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --step-1: clamp(1.15rem, 1.08rem + 0.35vw, 1.35rem);
+  --step-2: clamp(1.45rem, 1.28rem + 0.85vw, 2rem);
+  --step-3: clamp(1.85rem, 1.5rem + 1.75vw, 3rem);
+  --step-4: clamp(2.25rem, 1.7rem + 2.7vw, 4.1rem);
+  --step-5: clamp(2.8rem, 1.75rem + 5.2vw, 6.5rem);
+
+  /* Rythme */
+  --container: 78rem;
+  --gutter: clamp(1.25rem, 5vw, 3.5rem);
+  --s-1: 0.5rem;
+  --s-2: 1rem;
+  --s-3: 1.5rem;
+  --s-4: 2.25rem;
+  --s-5: 3.5rem;
+  --s-6: 5rem;
+  --s-7: clamp(4rem, 8vw, 7rem);
+
+  --radius: 2px;
+  --radius-lg: 4px;
+
+  /* Mouvement — court, jamais décoratif */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast: 140ms;
+  --t-base: 240ms;
+  --t-slow: 420ms;
+
+  --header-h: 5.5rem;
+  --header-compact-h: 4.5rem;
+  --shadow-soft: 0 1px 2px rgb(8 21 38 / 5%), 0 8px 28px -14px rgb(8 21 38 / 20%);
+  --shadow-lift: 0 2px 4px rgb(8 21 38 / 6%), 0 28px 60px -24px rgb(8 21 38 / 30%);
+}
+
+/* Inversion de surface pour les sections sombres. */
+.on-dark {
+  --surface: var(--navy-900);
+  --surface-raised: var(--navy-800);
+  --on-surface: var(--ivory-100);
+  --on-surface-muted: color-mix(in srgb, var(--ivory-100) 68%, transparent);
+  --accent: var(--brass-400);
+  --accent-contrast: var(--navy-950);
+  --border: var(--rule-light);
+  background: var(--surface);
+  color: var(--on-surface);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   2. RESET
+   ═══════════════════════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* Aucun titre ne doit se retrouver sous le header collant (règle 31) */
+  scroll-padding-top: calc(var(--header-h) + 1.5rem);
+}
+
+@include motion-ok {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--sans);
+  font-size: var(--step-0);
+  line-height: 1.65;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+ul,
+ol,
+dl,
+fieldset {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+fieldset {
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--serif);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--step-5);
+}
+
+h2 {
+  font-size: var(--step-4);
+}
+
+h3 {
+  font-size: var(--step-3);
+}
+
+h4 {
+  font-size: var(--step-2);
+}
+
+h1 em,
+h2 em,
+h3 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Focus visible partout, jamais supprimé */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+::selection {
+  background: var(--brass-400);
+  color: var(--navy-900);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   3. PRIMITIVES DE MISE EN PAGE
+   ═══════════════════════════════════════════════════════════ */
+.container {
+  width: min(var(--container), 100% - var(--gutter) * 2);
+  margin-inline: auto;
+}
+
+.container--narrow {
+  --container: 48rem;
+}
+
+.section {
+  padding-block: var(--s-7);
+}
+
+.section--tight {
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: fixed;
+  inset-block-start: -6rem;
+  inset-inline-start: 1rem;
+  z-index: 1000;
+  padding: 0.85rem 1.25rem;
+  background: var(--brass-500);
+  color: var(--navy-900);
+  font-size: var(--step--1);
+  font-weight: 600;
+  border-radius: var(--radius);
+  transition: inset-block-start var(--t-base) var(--ease);
+}
+
+.skip-link:focus {
+  inset-block-start: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   4. TYPOGRAPHIE UTILITAIRE
+   ═══════════════════════════════════════════════════════════ */
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.kicker::before {
+  content: '';
+  inline-size: 1.75rem;
+  block-size: 1px;
+  background: currentColor;
+  opacity: 0.6;
+  flex: none;
+}
+
+.kicker--plain::before {
+  display: none;
+}
+
+.lead {
+  font-family: var(--serif);
+  font-size: var(--step-2);
+  font-weight: 300;
+  line-height: 1.38;
+  letter-spacing: -0.015em;
+}
+
+.muted {
+  color: var(--on-surface-muted);
+}
+
+/* Numérotation éditoriale : le chiffre italique laiton qui rythme les listes
+   de services, de destinations et d'engagements. */
+.numeral {
+  display: block;
+  font-family: var(--serif);
+  font-size: var(--step-1);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: lining-nums;
+}
+
+.section-head {
+  max-width: 52rem;
+  display: grid;
+  gap: var(--s-3);
+  margin-bottom: clamp(2.75rem, 6vw, 4.5rem);
+}
+
+.section-head > p:last-child:not(.kicker) {
+  max-width: 40rem;
+  color: var(--on-surface-muted);
+  font-size: var(--step-1);
+}
+
+.rule {
+  border: 0;
+  block-size: 1px;
+  background: var(--border);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   5. REVEAL AU SCROLL
+   L'état initial n'est posé que si JS a pris la main (html.js),
+   donc sans JavaScript tout le contenu reste visible. (règle 19)
+   ═══════════════════════════════════════════════════════════ */
+@include motion-ok {
+  html.js [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+    transition:
+      opacity var(--t-slow) var(--ease-out),
+      transform var(--t-slow) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  html.js [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   6. TRANSITIONS DE PAGE (View Transitions)
+   Court et discret : le visiteur ne doit jamais attendre. (règle 1)
+   ═══════════════════════════════════════════════════════════ */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: pt-out 160ms var(--ease) both;
+}
+
+::view-transition-new(root) {
+  animation: pt-in 260ms var(--ease-out) both;
+}
+
+@keyframes pt-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pt-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+}
+
+/* Le header et le bandeau CTA ne participent pas à la transition :
+   ils restent stables, ce qui crée la sensation de continuité. */
+::view-transition-group(site-header),
+::view-transition-group(sticky-cta) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

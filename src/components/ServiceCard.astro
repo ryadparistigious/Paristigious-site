@@ -1,0 +1,46 @@
+---
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  service: CollectionEntry<'services'>;
+  eager?: boolean;
+}
+const { service, eager = false } = Astro.props;
+---
+
+<a class="service-card" href={`/services/${service.id}`} data-astro-prefetch>
+  <div class="service-card__image">
+    <Picture src={service.data.cover} alt="" widths={[400, 700, 1000]}
+      sizes="(min-width: 64rem) 30vw, (min-width: 40rem) 45vw, 90vw"
+      formats={['avif', 'webp']} loading={eager ? 'eager' : 'lazy'} />
+    <span class="service-card__number">{String(service.data.order).padStart(2, '0')}</span>
+    <span class="service-card__arrow" aria-hidden="true">↗</span>
+  </div>
+  <div class="service-card__body">
+    <h3>{service.data.title}</h3>
+    <p>{service.data.tagline}</p>
+    <span class="service-card__link">Explorer ce service <span aria-hidden="true">→</span></span>
+  </div>
+</a>
+
+<style lang="scss">
+  .service-card { display: flex; flex-direction: column; height: 100%; }
+  .service-card__image { position: relative; overflow: hidden; background: var(--navy-800); }
+  .service-card__image :global(img) {
+    width: 100%; height: auto; aspect-ratio: 1.5; object-fit: cover;
+    transition: transform 650ms var(--ease-out), filter 650ms var(--ease-out);
+    filter: saturate(.8);
+  }
+  .service-card__number { position: absolute; top: 1rem; left: 1rem; color: white; font-size: .7rem; letter-spacing: .12em; background: rgb(12 24 28 / 70%); padding: .3rem .6rem; }
+  .service-card__arrow { position: absolute; bottom: 1rem; right: 1rem; display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--ivory-50); color: var(--ink); font-size: 1.3rem; transition: background var(--t-base), transform var(--t-base); }
+  .service-card__body { display: flex; flex: 1; flex-direction: column; align-items: start; padding: 1.5rem 0 1.25rem; border-bottom: 1px solid var(--border); }
+  h3 { font-size: clamp(1.5rem, 2.1vw, 2rem); line-height: 1.2; }
+  p { margin-top: .65rem; margin-bottom: 1.25rem; font-size: .88rem; color: var(--on-surface-muted); line-height: 1.7; }
+  .service-card__link { display: flex; align-items: center; gap: .8rem; margin-top: auto; font-size: .66rem; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; color: var(--accent); }
+  .service-card:focus-visible .service-card__arrow { background: var(--brass-400); }
+  @include hover-ok {
+    .service-card:hover .service-card__image :global(img) { transform: scale(1.045); filter: saturate(1); }
+    .service-card:hover .service-card__arrow { background: var(--brass-400); transform: rotate(45deg); }
+  }
+</style>

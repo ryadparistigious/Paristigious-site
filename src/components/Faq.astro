@@ -1,0 +1,135 @@
+---
+/**
+ * FAQ en <details>/<summary> natifs.
+ *
+ * L'attribut `name` partagé donne l'accordéon exclusif (une seule question
+ * ouverte à la fois) sans une ligne de JavaScript, et l'ouverture est
+ * animée en CSS via ::details-content + interpolate-size.
+ * Sans JS et sans CSS moderne, tout reste ouvrable et lisible. (règles 25 et 19)
+ */
+export type FaqItem = { q: string; a: string };
+
+interface Props {
+  items: FaqItem[];
+  name?: string;
+}
+
+const { items, name = 'faq' } = Astro.props;
+---
+
+<div class="faq">
+  {
+    items.map((item) => (
+      <details class="faq__item" name={name}>
+        <summary>
+          <span class="faq__q">{item.q}</span>
+          <span class="faq__sign" aria-hidden="true" />
+        </summary>
+        <div class="faq__body">
+          <p set:html={item.a} />
+        </div>
+      </details>
+    ))
+  }
+</div>
+
+<style lang="scss">
+  .faq {
+    display: grid;
+    border-block-start: 1px solid var(--border);
+  }
+
+  .faq__item {
+    border-block-end: 1px solid var(--border);
+    /* Autorise l'animation vers `auto` sur la hauteur du contenu. */
+    interpolate-size: allow-keywords;
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    /* Cible confortable au pouce, bien au-delà de 48px. (règle 22) */
+    padding-block: 1.35rem;
+    list-style: none;
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease);
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary:focus-visible {
+    outline-offset: -3px;
+  }
+
+  .faq__q {
+    font-family: var(--serif);
+    font-size: var(--step-1);
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.012em;
+  }
+
+  @include hover-ok {
+    summary:hover .faq__q {
+      color: var(--accent);
+    }
+  }
+
+  /* Le signe + devient − à l'ouverture : le feedback est immédiat. (règle 28) */
+  .faq__sign {
+    position: relative;
+    flex: none;
+    inline-size: 14px;
+    block-size: 14px;
+    color: var(--accent);
+  }
+
+  .faq__sign::before,
+  .faq__sign::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inline-size: 14px;
+    block-size: 1.5px;
+    background: currentColor;
+    transition: transform var(--t-base) var(--ease);
+  }
+
+  .faq__sign::after {
+    transform: rotate(90deg);
+  }
+
+  .faq__item[open] .faq__sign::after {
+    transform: rotate(0deg);
+  }
+
+  .faq__body {
+    padding-block-end: 1.5rem;
+    max-width: 46rem;
+    color: var(--on-surface-muted);
+  }
+
+  /* Animation d'ouverture native. Ignorée par les navigateurs qui ne
+     connaissent pas ::details-content — le contenu s'affiche simplement. */
+  @include motion-ok {
+    .faq__item::details-content {
+      block-size: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition:
+        block-size var(--t-base) var(--ease),
+        content-visibility var(--t-base) allow-discrete,
+        opacity var(--t-base) var(--ease);
+    }
+
+    .faq__item[open]::details-content {
+      block-size: auto;
+      opacity: 1;
+    }
+  }
+</style>

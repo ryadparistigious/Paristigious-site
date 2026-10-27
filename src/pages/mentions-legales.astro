@@ -1,0 +1,42 @@
+---
+import Legal from '../layouts/Legal.astro';
+import { site } from '../lib/site';
+---
+
+<Legal
+  title="Mentions légales"
+  kicker="Informations légales"
+  description="Mentions légales du site Paristigious."
+>
+  <p>
+    Ces informations doivent être complétées avant la mise en ligne publique du site.
+  </p>
+
+  <h2>Éditeur</h2>
+  <p>
+    <strong>[RAISON SOCIALE À CONFIRMER]</strong><br />
+    [FORME JURIDIQUE, CAPITAL, SIÈGE SOCIAL À CONFIRMER]<br />
+    [SIREN / RCS ET NUMÉRO DE TVA À CONFIRMER]<br />
+    Contact : <a href={`mailto:${site.email}`}>{site.email}</a><br />
+    [TÉLÉPHONE À CONFIRMER]
+  </p>
+
+  <h2>Directeur de la publication</h2>
+  <p><strong>[NOM DU DIRECTEUR DE LA PUBLICATION À CONFIRMER]</strong></p>
+
+  <h2>Hébergement</h2>
+  <p><strong>[HÉBERGEUR, RAISON SOCIALE ET ADRESSE À CONFIRMER]</strong></p>
+
+  <h2>Propriété intellectuelle</h2>
+  <p>
+    Les contenus, textes et photographies présents sur ce site sont protégés. Toute
+    reproduction, même partielle, nécessite une autorisation préalable.
+  </p>
+
+  <h2>Véhicules présentés</h2>
+  <p>
+    Les modèles de véhicules cités le sont à titre indicatif. Les marques mentionnées
+    appartiennent à leurs propriétaires respectifs, et les véhicules ne sont pas présentés
+    comme appartenant à Paristigious.
+  </p>
+</Legal>

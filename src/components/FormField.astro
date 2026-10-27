@@ -1,0 +1,213 @@
+---
+import type { Field } from '../lib/quote';
+
+interface Props {
+  field: Field;
+  /** Préfixe d'identifiant : les champs d'étape 2 existent en 6 variantes. */
+  scope: string;
+}
+
+const { field, scope } = Astro.props;
+const id = `${scope}-${field.name}`;
+const describedBy = [field.help ? `${id}-help` : null, `${id}-error`].filter(Boolean).join(' ');
+
+// Interdit les dates passées côté navigateur aussi, pas seulement à la
+// validation : le sélecteur natif grise directement les jours révolus. (règle 14)
+const today = new Date();
+const minDate = field.notPast
+  ? `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  : undefined;
+
+const common = {
+  id,
+  name: field.name,
+  'data-field': field.name,
+  'aria-describedby': describedBy,
+  autocomplete: field.autocomplete,
+  inputmode: field.inputmode,
+  placeholder: field.placeholder,
+};
+---
+
+<div class:list={['field', field.wide && 'field--wide']}>
+  <label for={id}>
+    {field.label}
+    {field.required && <span class="field__req" aria-hidden="true">*</span>}
+    {field.required && <span class="visually-hidden">(obligatoire)</span>}
+  </label>
+
+  {
+    field.type === 'textarea' ? (
+      <textarea {...common} rows="4" />
+    ) : field.type === 'select' ? (
+      <select {...common}>
+        <option value="">Sélectionner…</option>
+        {field.options?.map((option) => <option value={option}>{option}</option>)}
+      </select>
+    ) : field.type === 'address' ? (
+      /* Le Web Component enrichit ce champ ; sans lui, c'est un input texte
+         ordinaire, avec le même nom et la même validation. (règle 13) */
+      <address-autocomplete class="ac">
+        <input type="text" {...common} />
+        <ul class="ac__list" id={`${id}-list`} role="listbox" aria-label="Propositions d’adresses" hidden />
+        <span class="visually-hidden" data-ac-status aria-live="polite" />
+      </address-autocomplete>
+    ) : field.type === 'number' ? (
+      <input type="number" {...common} min={field.min} max={field.max} step="1" />
+    ) : field.type === 'date' ? (
+      <input type="date" {...common} min={minDate} />
+    ) : field.type === 'time' ? (
+      <input type="time" {...common} />
+    ) : (
+      <input type="text" {...common} />
+    )
+  }
+
+  {field.help && <p class="field__help" id={`${id}-help`}>{field.help}</p>}
+  {/* Le conteneur d'erreur existe dès le rendu : le remplir ne provoque
+      aucun décalage de mise en page. (règle 26 — CLS) */}
+  <p class="field__error" id={`${id}-error`} data-error-for={field.name} aria-live="polite"></p>
+</div>
+
+<style lang="scss">
+  .field {
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+  }
+
+  .field--wide {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--on-surface);
+  }
+
+  .field__req {
+    color: var(--accent);
+    margin-inline-start: 0.2rem;
+  }
+
+  input,
+  select,
+  textarea {
+    inline-size: 100%;
+    /* 3rem = 48px : cible tactile confortable. Le corps à 16px empêche
+       le zoom automatique d'iOS au focus. (règle 22) */
+    min-block-size: 3rem;
+    padding: 0.75rem 0.9rem;
+    font-size: 16px;
+    background: var(--surface-raised);
+    color: var(--on-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition:
+      border-color var(--t-fast) var(--ease),
+      box-shadow var(--t-fast) var(--ease);
+  }
+
+  textarea {
+    min-block-size: 7rem;
+    resize: vertical;
+    line-height: 1.55;
+  }
+
+  select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 49%, currentColor 50%),
+      linear-gradient(-45deg, transparent 49%, currentColor 50%);
+    background-position: calc(100% - 1.1rem) 55%, calc(100% - 0.7rem) 55%;
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+    padding-inline-end: 2.5rem;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+    outline: none;
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  /* L'état invalide n'est peint qu'après une validation réelle, jamais
+     pendant que l'utilisateur tape sa première lettre. (règle 12) */
+  [aria-invalid='true'] {
+    border-color: #b3372f;
+  }
+
+  [aria-invalid='true']:focus {
+    box-shadow: 0 0 0 3px rgb(179 55 47 / 18%);
+  }
+
+  .field__help {
+    font-size: 0.78rem;
+    color: var(--on-surface-muted);
+  }
+
+  .field__error {
+    min-block-size: 0;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #b3372f;
+  }
+
+  .field__error:not(:empty) {
+    margin-block-start: 0.1rem;
+  }
+
+  /* ─── Combobox d'adresse ──────────────────────────────── */
+  .ac {
+    position: relative;
+    display: block;
+  }
+
+  .ac__list {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: calc(100% + 4px);
+    z-index: 20;
+    max-block-size: 17rem;
+    overflow-y: auto;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .ac__list[hidden] {
+    display: none;
+  }
+
+  .ac__list :global(li) {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.7rem 0.9rem;
+    cursor: pointer;
+  }
+
+  .ac__list :global(li.is-active),
+  .ac__list :global(li:hover) {
+    background: var(--ivory-200);
+  }
+
+  .ac__list :global(.ac__label) {
+    font-size: 0.92rem;
+  }
+
+  .ac__list :global(.ac__detail) {
+    font-size: 0.75rem;
+    color: var(--on-surface-muted);
+  }
+</style>

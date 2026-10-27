@@ -1,0 +1,51 @@
+---
+import Legal from '../layouts/Legal.astro';
+import { site } from '../lib/site';
+---
+
+<Legal
+  title="Politique de confidentialité"
+  kicker="Données personnelles"
+  description="Traitement des données personnelles collectées via le site Paristigious."
+>
+  <h2>Ce que le site collecte aujourd’hui</h2>
+  <p>
+    Tant qu’aucun point d’envoi serveur n’est configuré, le formulaire de demande de devis
+    ne transmet rien à un serveur : il prépare un e-mail dans votre propre messagerie. Vous
+    restez maître de l’envoi.
+  </p>
+
+  <h2>Sauvegarde temporaire dans votre navigateur</h2>
+  <p>
+    Pour éviter de vous faire ressaisir un formulaire interrompu, les informations en cours
+    de saisie sont conservées dans le stockage de session de votre navigateur. Elles ne
+    quittent jamais votre appareil, ne sont pas lisibles par Paristigious, et disparaissent
+    à la fermeture de l’onglet ou après envoi.
+  </p>
+
+  <h2>Mesure d’audience et cookies</h2>
+  <p>
+    Aucun cookie de mesure d’audience, de publicité ou de suivi tiers n’est déposé. Les
+    polices de caractères sont hébergées sur ce site : aucune requête n’est adressée à un
+    domaine tiers lors de votre visite.
+  </p>
+
+  <h2>Utilisation de votre demande</h2>
+  <p>
+    Les informations que vous nous transmettez servent exclusivement à étudier et à
+    organiser la prestation demandée.
+  </p>
+  <p>
+    <strong>
+      [RESPONSABLE DE TRAITEMENT, BASES LÉGALES, DURÉES DE CONSERVATION ET DESTINATAIRES À
+      CONFIRMER AVANT MISE EN LIGNE.]
+    </strong>
+  </p>
+
+  <h2>Vos droits</h2>
+  <p>
+    Vous disposez d’un droit d’accès, de rectification, d’effacement, de limitation et
+    d’opposition sur les données vous concernant. Pour l’exercer, écrivez à
+    <a href={`mailto:${site.email}`}>{site.email}</a>.
+  </p>
+</Legal>

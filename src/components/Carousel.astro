@@ -1,0 +1,222 @@
+---
+/**
+ * Piste horizontale parcourable.
+ *
+ * Base : un conteneur `overflow-x: auto` avec `scroll-snap`. Sans une seule
+ * ligne de JavaScript on a déjà le swipe tactile, l'inertie native, le
+ * snapping, le trackpad, la molette shift et le défilement au clavier.
+ *
+ * Surcouche JS (~1 ko) : boutons précédent/suivant, pagination accessible,
+ * glisser-déposer à la souris, et masquage automatique des contrôles quand
+ * tout tient à l'écran. Le scroll vertical de la page n'est jamais capturé.
+ */
+interface Props {
+  label: string;
+  /** Largeur d'une carte : contrôle combien d'éléments sont visibles. */
+  itemWidth?: string;
+  /** Au-delà de cette largeur, la piste devient une grille classique. */
+  gridFrom?: string;
+  gridColumns?: number;
+  class?: string;
+}
+
+const {
+  label,
+  itemWidth = 'min(78vw, 22rem)',
+  gridFrom,
+  gridColumns = 3,
+  class: className,
+} = Astro.props;
+
+const id = `carousel-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<section
+  class:list={['carousel', className]}
+  data-carousel
+  aria-roledescription="carrousel"
+  aria-label={label}
+  style={`--item-w:${itemWidth};${gridFrom ? `--grid-from:${gridFrom};--grid-cols:${gridColumns};` : ''}`}
+  data-grid-from={gridFrom}
+>
+  <div class="carousel__viewport" data-viewport id={id} tabindex="0" role="group" aria-label={`${label} — piste défilante`}>
+    <ul class="carousel__track" data-track>
+      <slot />
+    </ul>
+  </div>
+
+  {/* Contrôles révélés par le script uniquement si la piste déborde. */}
+  <div class="carousel__controls" data-controls hidden>
+    <p class="carousel__progress" data-progress aria-live="polite"></p>
+    <div class="carousel__buttons">
+      <button type="button" data-prev aria-controls={id} aria-label="Élément précédent">
+        <svg viewBox="0 0 14 12" width="14" height="12" aria-hidden="true">
+          <path d="M13 6H1m5-5L1 6l5 5" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+        </svg>
+      </button>
+      <button type="button" data-next aria-controls={id} aria-label="Élément suivant">
+        <svg viewBox="0 0 14 12" width="14" height="12" aria-hidden="true">
+          <path d="M1 6h12M8 1l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<style lang="scss">
+  .carousel {
+    --gap: clamp(1rem, 2vw, 1.5rem);
+  }
+
+  .carousel__viewport {
+    /* Débordement plein cadre : les cartes filent jusqu'aux bords de l'écran
+       sur mobile, ce qui indique visuellement qu'il y a autre chose à droite. */
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    /* Empêche le geste horizontal de déclencher le retour arrière du
+       navigateur, sans jamais bloquer le scroll vertical. (règle 38) */
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    scroll-padding-inline: var(--gutter);
+  }
+
+  .carousel__viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .carousel__viewport:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .carousel__track {
+    display: flex;
+    gap: var(--gap);
+    padding-block-end: 0.25rem;
+  }
+
+  .carousel__track > :global(*) {
+    flex: 0 0 var(--item-w);
+    scroll-snap-align: start;
+  }
+
+  /* Pendant un glisser à la souris, on neutralise la sélection de texte et
+     le snap, sinon le mouvement accroche. */
+  .carousel[data-dragging] .carousel__viewport {
+    scroll-snap-type: none;
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  .carousel[data-dragging] .carousel__track > :global(*) {
+    pointer-events: none;
+  }
+
+  /* ─── Contrôles ───────────────────────────────────────── */
+  .carousel__controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-block-start: var(--s-3);
+  }
+
+  .carousel__controls[hidden] {
+    display: none;
+  }
+
+  .carousel__progress {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    color: var(--on-surface-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .carousel__buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .carousel__buttons button {
+    display: grid;
+    place-items: center;
+    inline-size: 3rem;
+    block-size: 3rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: none;
+    color: var(--on-surface);
+    transition:
+      border-color var(--t-fast) var(--ease),
+      color var(--t-fast) var(--ease),
+      opacity var(--t-fast) var(--ease);
+  }
+
+  .carousel__buttons button[disabled] {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  @include hover-ok {
+    .carousel__buttons button:not([disabled]):hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  }
+</style>
+
+<style lang="scss" is:global>
+  /* Au-delà du seuil, la piste redevient une grille : le desktop montre
+     plusieurs éléments d'un coup au lieu d'imposer un glissement. (règle 6) */
+  @media (min-width: 64rem) {
+    .carousel[data-grid-from='lg'] .carousel__viewport {
+      margin-inline: 0;
+      padding-inline: 0;
+      overflow: visible;
+      scroll-snap-type: none;
+    }
+
+    .carousel[data-grid-from='lg'] .carousel__track {
+      display: grid;
+      grid-template-columns: repeat(var(--grid-cols, 3), minmax(0, 1fr));
+    }
+
+    .carousel[data-grid-from='lg'] .carousel__track > * {
+      flex: initial;
+    }
+
+    .carousel[data-grid-from='lg'] .carousel__controls {
+      display: none;
+    }
+  }
+
+  @media (min-width: 52rem) {
+    .carousel[data-grid-from='md'] .carousel__viewport {
+      margin-inline: 0;
+      padding-inline: 0;
+      overflow: visible;
+      scroll-snap-type: none;
+    }
+
+    .carousel[data-grid-from='md'] .carousel__track {
+      display: grid;
+      grid-template-columns: repeat(var(--grid-cols, 3), minmax(0, 1fr));
+    }
+
+    .carousel[data-grid-from='md'] .carousel__track > * {
+      flex: initial;
+    }
+
+    .carousel[data-grid-from='md'] .carousel__controls {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { initCarousels } from '../scripts/carousel';
+  initCarousels();
+</script>
